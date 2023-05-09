@@ -2,12 +2,11 @@ import requests
 from bs4 import BeautifulSoup 
 import pandas as pd
 
-
+#Creadential to a proxy lab
 
 
 base_url = "https://www.autotrader.co.za" 
-
-
+    
 #demo
 #base_url = "file:///C:/Users/Student/CanvasProject/" 
 # response = open('Land Rover Cars.html', 'r') 
@@ -48,34 +47,13 @@ def get_car_summary_info(soup):
         name = soup.find('h1', attrs={'class': 'e-listing-title'}).text
     except:
         name = "no name"
-        values.append(name)
-        values.append(price)
+    values.append(name)
+    values.append(price)
     for item in soup.find_all('li', attrs={'class': 'e-summary-icon'}):
         values.append(item.text)
     print(values)
     values = []
     
-
-def get_vehicle_details(car_info):  
-    try:
-        vd = car_info.find_all('div' , attrs={'class': 'col-6'})
-    except:
-        vd = "No Vehicle detals"
-        if vd == "No Vehicle detals":
-            print(vd)
-        else:
-            [vehicle_details.append(row.text) for row in vd]
-    print(Convert(vehicle_details))
-
-    try:
-        engine_details = car_info.find_all('span' , attrs={'class': 'col-6'})
-    except:
-        engine_details = "No engine detals"
-        if engine_details == "No engine detals":
-            print(engine_details)
-        else:
-            [specifications.append(row.text) for row in engine_details ]
-    print(Convert(specifications))
 
 
 #========================================THIS CODE works for retrieving links=================================
@@ -92,8 +70,26 @@ for page in range(1, 4):
 
             print("Summary:")
             get_car_summary_info(soup)
-            print("Vehicle details")
-            get_vehicle_details(car_info)
+
+            try:
+                vd = car_info.find_all('div' , attrs={'class': 'col-6'})
+            except:
+                vd = "No Vehicle detals"
+            if vd == "No Vehicle detals":
+                    print(vd)
+            else:
+                [vehicle_details.append(row.text) for row in vd]
+            print(Convert(vehicle_details))
+
+            try:
+                engine_details = car_info.find('span' , attrs={'class': 'col-6'})
+            except:
+                engine_details = "No engine detals"
+            if engine_details == "No engine detals":
+                print(engine_details)
+            else:
+                [specifications.append(row.text) for row in engine_details ]
+            print(Convert(specifications))
             
             i = i + 1
             if i == 3:
