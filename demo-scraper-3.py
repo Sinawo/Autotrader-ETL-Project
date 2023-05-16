@@ -10,10 +10,7 @@ base_url = "https://www.autotrader.co.za"
 #base_url = "file:///C:/Users/Student/CanvasProject/" 
 # response = open('Land Rover Cars.html', 'r') 
 
-header = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36' 
-
-
-}
+header = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36' }
 #This is going to store the links for each car
 car_links = []
 vehicle_details = []
@@ -25,6 +22,7 @@ specifications = []
 proxy = "http://50f791d8d804651ab0a4a8e83231e952ad1e5eee:js_render=true&antibot=true&wait=15000&js_instructions=%255B%257B%2522click%2522%253A%2522.selector%2522%257D%252C%257B%2522wait%2522%253A500%257D%252C%257B%2522fill%2522%253A%255B%2522.input%2522%252C%2522value%2522%255D%257D%252C%257B%2522wait_for%2522%253A%2522.slow_selector%2522%257D%255D&premium_proxy=true@proxy.zenrows.com:8001"
 proxies = {"http": proxy, "https": proxy}
 
+  
 #Converts the list to dictionary 
 def Convert(lst):
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
@@ -36,6 +34,7 @@ def get_links(response):
     for item in car_list:
         for link in item.find_all('a', href=True):
         #Add the links with baseURL
+
             car_links.append(base_url + link['href'])
     return car_links
 
@@ -63,16 +62,24 @@ def get_car_summary_info(soup):
 
 #========================================THIS CODE works for retrieving links=================================
 #demo
-for page in range(10):
+for page in range(2):
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}")
     print(response.status_code)
-    car_links = get_links(response)
-    i = 0
-    for link in car_links:
-            r = requests.get(link)              
+    home_page = BeautifulSoup(response.content, 'lxml')
+    car_list = home_page.find_all('div', attrs={'class': 'b-result-tiles'})
+    for item in car_list:
+        found_cars = 0
+        for link in item.find_all('a', href=True):
+        #Add the links with baseURL
+            if found_cars == 11:
+              break
+        
+            found_link = (base_url + link['href'])
+    
+            r = requests.get(found_link, timeout=10)              
             soup = BeautifulSoup(r.content, 'lxml')
    
-            car_info = soup.find('div', attrs={'class': 'e-featured-tile-container'} )
+            # car_info = soup.find('div', attrs={'class': 'e-featured-tile-container'} )
 
             
             get_car_summary_info(soup)
@@ -95,12 +102,9 @@ for page in range(10):
                 print(engine_details)
             else:
                 [specifications.append(row.text) for row in engine_details ]
-            print(Convert(specifications))
-            '''
-	if i == 3:
-                break
-            i = i + 1
-            '''
+            print(Convert(specifications))   
+            found_cars = found_cars+ 1
+	    
     print(f'\n\n Next Vehicle on page: {page}')
 
   

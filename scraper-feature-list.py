@@ -39,44 +39,45 @@ def get_links(response):
             car_links.append(base_url + link['href'])
     return car_links
 
-def get_car_summary_info(soup):
-    values = []
-    try:
-        price = soup.find('div', attrs={'class': 'e-price'}).text
-        #dealer_name = soup.find('a', attrs={'class': 'e-dealer-link'} ).text
-    except:
-        price = '0'
-    try:
-        name = soup.find('h1', attrs={'class': 'e-listing-title'}).text
-    except:
-        name = "no name"
-    values.append(name)
-    values.append(price)
-    #values.append(dealer_name)
-    for item in soup.find_all('li', attrs={'class': 'e-summary-icon'}):
-        values.append(item.text)
-    print(values)
-    
+
     
     
 
 
 #========================================THIS CODE works for retrieving links=================================
 #demo
-for page in range(10):
+for page in range(1):
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}")
     print(response.status_code)
-    car_links = get_links(response)
-    i = 0
-    for link in car_links:
-            r = requests.get(link)              
-            soup = BeautifulSoup(r.content, 'lxml')
-   
-            car_info = soup.find('div', attrs={'class': 'e-featured-tile-container'} )
 
-            
-            get_car_summary_info(soup)
-            
+    soup = BeautifulSoup(response.content, 'lxml')
+    # cars_container = soup.find_all('span', class_='e-details') --> I'll used this one when I want to loop through this div tag
+    car_contaner = soup.find_all('div', attrs={'class': 'b-result-tiles'})
+    price = car_contaner.find_all('span', attrs={'class': 'e-price'}).text
+    price_rating = car_contaner.find_all('span', attrs={'class': 'b-price-rating m-norating'}).text
+    title = car_contaner.find_all('span', attrs={'class': 'e-price'}).text
+    
+    used_new = car_contaner.find_all('span', attrs={'class': 'e-summary-icon m-type'}).text
+    mileage = car_contaner.find_all('span', attrs={'class': 'e-summary-icon'}).text
+    transmission = car_contaner.find_all('span', attrs={'class': 'e-summary-icon'})[1].text
+    dealer = car_contaner.find_all('span', attrs={'class': 'e-dealer'}).text
+    summary_details = {
+        'Car_Title' : title,
+        'Price': price,
+        'Price Rating': price_rating,
+        'New/Used': used_new,
+        'Mileage': mileage,
+        'Transimmision': transmission,
+        'Dealer': dealer
+    }
+    df = pd.Dataframe(summary_details)
+    print(df)
+    #Now lets take the link fromthis car container div tag 
+    for item in car_contaner:
+        for link in item.find_all('a', href=True):
+        #Lets visit the link then
+            r = requests.get(base_url + link['href'], timeout=10)              
+            soup = BeautifulSoup(r.content, 'lxml')
             try:
                 vd = soup.find_all('div' , attrs={'class': 'col-6'})
             except:
@@ -85,7 +86,8 @@ for page in range(10):
                 print(vd)
             else:
                 [vehicle_details.append(row.text) for row in vd]
-            print(Convert(vehicle_details))
+            vdf =pd.DataFrame(Convert(vehicle_details))
+            print(vdf)
 
             try:
                 engine_details = soup.find_all('span' , attrs={'class': 'col-6'})
@@ -95,13 +97,31 @@ for page in range(10):
                 print(engine_details)
             else:
                 [specifications.append(row.text) for row in engine_details ]
-            print(Convert(specifications))
-            '''
-	if i == 3:
+            sdf =pd.DataFrame(Convert(specifications))
+            print(sdf)
+            if i == 3:
                 break
             i = i + 1
-            '''
+    
     print(f'\n\n Next Vehicle on page: {page}')
+            
+    
+
+
+
+
+
+    car_links = get_links(response)
+    i = 0
+    for link in car_links:
+            r = requests.get(link)              
+            soup = BeautifulSoup(r.content, 'lxml')
+   
+            car_info = soup.find('div', attrs={'class': 'e-featured-tile-container'} )
+
+            
+            
+            
 
   
 
