@@ -14,7 +14,7 @@ base_url = "https://www.autotrader.co.za"
 
 
 # Define table and column names
-table_name = 'staging_table2'
+table_name = 'overnight_table'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
                 '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
@@ -93,7 +93,7 @@ def Add_Key_Values(list, dictionary):
     return car_data
 
 # Loop through each page of cars on the Autotrader website
-for page in range(1000):
+for page in range(100000):
     
     # Get the HTML content of the page
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}")
@@ -102,7 +102,7 @@ for page in range(1000):
     # Extract the car ID using regular expression
     
     # Find all the car listings on the page
-    cars_containers = home_page.find_all('div', attrs={'class': 'e-featured-tile-container'})
+    cars_containers = home_page.find_all('div', attrs={'class': 'b-result-tiles'})
     
     # Loop through each car listing
     found_cars = 0
@@ -112,14 +112,32 @@ for page in range(1000):
         for link in each_div.find_all('a', href=True):
             if found_cars == 8:
                  break
-            found_link = (base_url + link['href'])
-            Car_ID = re.search(r'/(\d+)\?', found_link).group(1)
-            suburb_element = each_div.find('span', class_='e-suburb').text
+            try:
+                found_link = (base_url + link['href'])
+                Car_ID = re.search(r'/(\d+)\?', found_link).group(1)
+                
+            except:
+                 continue
+
             # Get the HTML content of the car listing page
-            r = requests.get(found_link, timeout=10)
-            soup = BeautifulSoup(r.content, 'lxml')
+            res = requests.get(found_link, timeout=10)
+            soup = BeautifulSoup(res.content, 'lxml')
             
-            # Extract the basic details of the car
+            ul_tag = soup.find('ul', class_='b-breadcrumbs')
+
+            if ul_tag:
+                # Find the <a> tag within the <li> tag at position 3
+                a_tag = ul_tag.find_all('li')[2].find('a')
+
+                if a_tag:
+                    # Extract the text within the <a> tag
+                    location = a_tag.get_text(strip=True)
+
+                    # Print the extracted location
+                    
+                else:
+                   pass
+            
             try: 
                 title_element = soup.find('h1', class_='e-listing-title').text.strip()
                 dealer_name = soup.find('a', attrs={'class': 'e-dealer-link'} ).text
@@ -160,16 +178,16 @@ for page in range(1000):
 
             car_data = Add_Key_Values(engine_details, car_data)
             car_data = Add_Key_Values(vehicle_details, car_data)
-           
+            
             car_data['Car_ID'] = Car_ID
-            car_data['Suburb'] = suburb_element
+            car_data['Suburb'] = location
             # Check if all values in car_data have corresponding column names
             matching_keys = [key for key in car_data.keys() if key in column_n]
          
             # Get the corresponding values for the matching keys
             matching_values = [car_data[key] for key in matching_keys]
         
-            print(matching_keys)
+            # print(matching_keys)
             
             # Construct the INSERT query
             # Construct the INSERT query
@@ -193,5 +211,6 @@ for page in range(1000):
             conn.commit()
 
             # close the connection
+        found_cars += 1
           
 conn.close()    
