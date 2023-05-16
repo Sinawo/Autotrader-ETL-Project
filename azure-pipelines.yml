@@ -12,7 +12,7 @@ schedules:
 
 trigger:
   branches:
-    exclude:
+    include:
     - '*'
 pool:
   vmImage: ubuntu-latest
@@ -20,14 +20,15 @@ pool:
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '3.7'  # Replace 'x' with the desired Python version
+    versionSpec: '3.x'  # Replace 'x' with the desired Python version
   displayName: 'Use Python'
 
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   displayName: 'Install dependencies'
-
+  workingDirectory: $(System.DefaultWorkingDirectory)
 - script: |
     python ssms-scraper.py
   displayName: 'Run ssms-scraper.py'
+  workingDirectory: $(System.DefaultWorkingDirectory)
