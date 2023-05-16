@@ -20,7 +20,7 @@ pool:
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '3.x'  # Replace 'x' with the desired Python version
+    versionSpec: '3.7'  # Replace 'x' with the desired Python version
   displayName: 'Use Python'
 
 - script: |
