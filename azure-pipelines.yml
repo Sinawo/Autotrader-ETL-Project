@@ -8,7 +8,7 @@ schedules:
   displayName: Run Script Every Hour
   branches:
     include:
-    - main
+    - Sinawo-Mod
 
 trigger:
   branches:
