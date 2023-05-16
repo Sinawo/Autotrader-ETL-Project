@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 schedules:
-- cron: "30 19-23,0-8 * * *"
+- cron: "0 * * * *"
   displayName: Run Script Every Hour
   branches:
     include:
