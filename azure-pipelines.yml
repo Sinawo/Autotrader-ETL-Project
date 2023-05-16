@@ -3,27 +3,23 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
+schedules:
+- cron: "30 19-23,0-8 * * *"
+  displayName: Run Script Every Hour
+
 trigger:
-- main
+  branches:
+    include:
+    - main
 
 pool:
   vmImage: ubuntu-latest
-strategy:
-  matrix:
-    Python27:
-      python.version: '2.7'
-    Python35:
-      python.version: '3.5'
-    Python36:
-      python.version: '3.6'
-    Python37:
-      python.version: '3.7'
 
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+    versionSpec: '3.x'  # Replace 'x' with the desired Python version
+  displayName: 'Use Python'
 
 - script: |
     python -m pip install --upgrade pip
@@ -31,6 +27,5 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+    python ssms-scraper.py
+  displayName: 'Run ssms-scraper.py'
