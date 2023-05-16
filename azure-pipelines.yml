@@ -6,12 +6,14 @@
 schedules:
 - cron: "30 19-23,0-8 * * *"
   displayName: Run Script Every Hour
-
-trigger:
   branches:
     include:
     - main
 
+trigger:
+  branches:
+    exclude:
+    - '*'
 pool:
   vmImage: ubuntu-latest
 
