@@ -29,6 +29,7 @@ steps:
   displayName: 'Install dependencies'
 - script: |
     python -m pip install --upgrade pip
+    pip install requests
     pip install install beautifulsoup4
     pip install pyodbc
     pip install regex
