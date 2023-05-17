@@ -3,11 +3,10 @@
 
 import requests
 from bs4 import BeautifulSoup
-
+import random
 import pyodbc
 
 import re
-
 
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
@@ -91,9 +90,10 @@ def Add_Key_Values(list, dictionary):
                     car_data[key] = value
                 i = i + 1
     return car_data
-
+# Generate a random number between 1 and 4340 pages
+num_iterations = random.randint(1, 4340)
 # Loop through each page of cars on the Autotrader website
-for page in range(1000):
+for page in range(num_iterations):
     
     # Get the HTML content of the page
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}")
@@ -110,7 +110,7 @@ for page in range(1000):
         
         # Find the link to the car listing
         for link in each_div.find_all('a', href=True):
-            if found_cars == 8:
+            if found_cars == 10:
                  break
             try:
                 found_link = (base_url + link['href'])
@@ -196,9 +196,13 @@ for page in range(1000):
             column_names_with_brackets = ', '.join('"' + key + '"'  for key in matching_keys)
            
             insert_query = f"""
-                INSERT INTO {table_name} ({column_names_with_brackets}) 
-                VALUES ({placeholders})
-            """
+                    INSERT INTO {table_name} ({column_names_with_brackets}) 
+                    SELECT {placeholders}
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM {table_name} WHERE Car_ID = ?
+                    )
+                """
+            matching_values.append(Car_ID)
             
             # matching_values.append(Car_ID)
 
