@@ -20,24 +20,24 @@ jobs:
   displayName: 'Run Script'
   timeoutInMinutes: 720  # Set the timeout to 12 hours (720 minutes)
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+  steps:
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
 
 
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-- script: |
-    python -m pip install --upgrade pip
-    pip install install beautifulsoup4
-    pip install pyodbc
-    pip install regex
-    pip install lxml
-    pin install random 
-  displayName: 'Install dependencies'
-- script: |
-    python ssms-scraper.py
-  displayName: 'Run ssms-scraper.py'
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+  - script: |
+      python -m pip install --upgrade pip
+      pip install install beautifulsoup4
+      pip install pyodbc
+      pip install regex
+      pip install lxml
+     
+    displayName: 'Install dependencies'
+  - script: |
+      python ssms-scraper.py
+    displayName: 'Run ssms-scraper.py'
 
