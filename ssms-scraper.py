@@ -153,6 +153,12 @@ for page in range(num_iterations):
                 registration_year = icons[1].text.strip().split()[0]
                 transmission = icons[2].text.strip()
                 fuel_type = icons[3].text.strip()
+            elif car_type == "Certified":
+                car_type = icons[1].text.strip()
+                mileage = icons[4].text.strip()
+                registration_year = icons[2].text.strip().split()[0]
+                transmission = icons[3].text.strip()
+                fuel_type = icons[5].text.strip()
             else:
                 mileage = icons[2].text.strip()
 
