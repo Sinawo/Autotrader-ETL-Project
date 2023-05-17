@@ -112,6 +112,7 @@ for page in range(num_iterations):
         for link in each_div.find_all('a', href=True):
             #if found_cars == 10:
              #    break
+             # no more 10 cars I want all in a page
             try:
                 found_link = (base_url + link['href'])
                 Car_ID = re.search(r'/(\d+)\?', found_link).group(1)
