@@ -7,9 +7,13 @@ schedules:
   branches:
     include:
     - master
+    - my-branch
   displayName: Run Script Every Hour
 trigger:
-- master
+  branches:
+    include:
+    - master
+    - my-branch
 
 pool:
   vmImage: ubuntu-latest
