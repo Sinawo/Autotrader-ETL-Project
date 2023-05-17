@@ -110,8 +110,8 @@ for page in range(num_iterations):
         
         # Find the link to the car listing
         for link in each_div.find_all('a', href=True):
-            if found_cars == 10:
-                 break
+            #if found_cars == 10:
+             #    break
             try:
                 found_link = (base_url + link['href'])
                 Car_ID = re.search(r'/(\d+)\?', found_link).group(1)
