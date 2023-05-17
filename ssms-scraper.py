@@ -93,7 +93,7 @@ def Add_Key_Values(list, dictionary):
     return car_data
 
 # Loop through each page of cars on the Autotrader website
-for page in range(100000):
+for page in range(1000):
     
     # Get the HTML content of the page
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}")
