@@ -3,11 +3,11 @@
 
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
+
 import pyodbc
-import json
+
 import re
-import sqlite3
+
 
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
