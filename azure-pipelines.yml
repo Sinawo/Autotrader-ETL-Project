@@ -3,7 +3,8 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 schedules:
-- cron: "0 * * * *"
+
+- cron: "*/10 * * * "
   branches:
     include:
     - Sinawo-Mod
@@ -21,7 +22,7 @@ pool:
 jobs:
 - job: RunScript
   displayName: 'Run Script'
-  timeoutInMinutes: 60  # Set the timeout to 1 hours (60 minutes)
+  timeoutInMinutes: 5  # Set the timeout to 1 hours (60 minutes)
 
   steps:
   - script: echo Hello, world!
