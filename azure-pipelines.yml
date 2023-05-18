@@ -3,7 +3,7 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 schedules:
-- cron: "0 9 * * *"
+- cron: "0 * * * *"
   branches:
     include:
     - master
@@ -22,7 +22,7 @@ pool:
 jobs:
 - job: RunScript
   displayName: 'Run Script'
-  timeoutInMinutes: 720  # Set the timeout to 12 hours (720 minutes)
+  timeoutInMinutes: 60  # Set the timeout to 1 hours (60 minutes)
 
   steps:
   - script: echo Hello, world!
