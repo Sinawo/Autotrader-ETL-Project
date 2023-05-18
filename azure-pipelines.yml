@@ -6,14 +6,13 @@ schedules:
 - cron: "0 * * * *"
   branches:
     include:
-    - master
-    - my-branch
+    - Sinawo-Mod
   displayName: Run Script Every Hour
 trigger:
   branches:
     include:
     - master
-    - my-branch
+    - Sinawo-Mod
 
 pool:
   vmImage: ubuntu-latest
