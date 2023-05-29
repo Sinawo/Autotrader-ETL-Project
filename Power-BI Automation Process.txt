@@ -1,0 +1,19 @@
+To import the dataset into Power BI from your Azure DevOps pipeline, you can use the Power BI REST API to automate the import process. The following steps outline the general process:
+
+1. **Register an App**: Register an Azure AD app in the Azure portal to obtain the necessary credentials (client ID and client secret) for authenticating the API requests.
+
+2. **Acquire Access Token**: Use the registered app credentials to acquire an access token from Azure AD. This token will be used to authenticate the subsequent API requests to Power BI.
+
+3. **Create Import**: Use the Power BI REST API to create an import process for your dataset. You need to provide the details of the dataset (such as name, tables, columns, etc.) and specify the data source (e.g., SQL Server) and connection details.
+
+4. **Upload Data**: After creating the import, you can use the Power BI REST API to upload the data to the dataset. You can upload the data in chunks using the `PushRows` API endpoint, which allows you to send batches of rows to be appended to a table in Power BI.
+
+5. **Refresh Dataset**: Once the data is uploaded, trigger a dataset refresh using the Power BI REST API to ensure that the imported data is up-to-date and available for analysis.
+
+You will need to write scripts or code to interact with the Power BI REST API and perform these steps. You can use tools like. You may need to refer to PowerShell or the Power BI REST API documentation and explore the available endpoints and authentication mechanisms for more detailed guidance.
+
+It's also worth mentioning that Power BI offers various integration options, such as data gateways, to automate the data refresh process from on-premises data sources. You may consider using a data gateway if your SSMS instance is located on-premises.
+
+Remember to handle any authentication secrets securely within your Azure DevOps pipeline, such as using Azure Key Vault or pipeline variables with appropriate security measures.
+
+Note that the specific implementation details may vary based on your specific requirements, the version of Power BI, and the available APIs at the time of implementation. It's recommended to refer to the official Power BI REST API documentation for the most up-to-date information and guidance.

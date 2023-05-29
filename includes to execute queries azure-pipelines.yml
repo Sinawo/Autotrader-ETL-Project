@@ -1,0 +1,61 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+schedules:
+- cron: "0 * * * *"
+  branches:
+    include:
+    - Sinawo-Mod
+  displayName: Run Script Every Hour
+trigger:
+  branches:
+    include:
+    - master
+    - Sinawo-Mod
+
+pool:
+  vmImage: ubuntu-latest
+
+
+jobs:
+- job: RunScript
+  displayName: 'Run Script'
+  timeoutInMinutes: 60  # Set the timeout to 1 hours (60 minutes)
+
+  steps:
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
+
+
+
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+  - script: |
+      python -m pip install --upgrade pip
+      pip install install beautifulsoup4
+      pip install pyodbc
+      pip install regex
+      pip install lxml
+     
+    displayName: 'Install dependencies'
+  - script: |
+      python ssms-scraper.py
+    displayName: 'Run ssms-scraper.py'
+
+- job: UpdateTheFlatTable
+  displayName: 'Update the Flat table'
+  dependsOn: RunScript- job: UpdateTheFlatTable
+  displayName: 'Update the Flat table'
+  dependsOn: RunScript
+   - task: SqlAzureDacpacDeployment@1
+    displayName: 'Execute SQL Query'
+    inputs:
+      azureSubscription: '100320028971AE60'
+      AuthenticationType: 'SQL Sever Authentication '
+      ServerName: 'canvas-graduates.database.windows.net'
+      DatabaseName: 'graduatesDB'
+      SqlUsername: 'graduates23'
+      SqlPassword: 'CanGrad2023'
+      SqlFile: 'AutoTrader_Schema.sql'
