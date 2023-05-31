@@ -35,7 +35,7 @@ df = pd.read_sql(sql_query, conn)
 #df = pd.read_csv("Recent_dealers.csv")
 # Car make list
 car_makes = [
-    "Abarth", "GoNow", "Meiya", "Rolls-Royce", "London", "STUDEBAKER", "Alfa Romeo", "Geely", "MG",
+    "Abarth", "GoNow", "Meiya", "Rolls-Royce", "STUDEBAKER", "Alfa Romeo", "Geely", "MG",
     "Changan", "AC", "Shelby", "Aston Martin", "GWM", "MINI", "Datsun", "Jinbei", "TESLA", "Audi",
     "Honda", "Nissan", "Mercedes-Maybach", "BAW", "Asia", "BMW", "Hyundai", "Noble", "Triumph",
     "Willys", "Nash", "Bentley", "Hummer", "Opel", "AMC Rambler", "Austin-Healey", "Caterham",
