@@ -33,6 +33,19 @@ set Vehicle = Replace(Vehicle,'For Sale','');
 update Autotrade_sp
 set Price = Replace(Price,'R','');
 
+-- remove for POA
+UPDATE Autotrade_sp
+SET Price = ''
+WHERE Price = 'POA'
+
+-- remove for Price Space
+update Autotrade_sp
+set Price = Replace(Replace(Price,' ',''),' ','');
+
+--Changing data type
+ALTER TABLE Autotrade_sp
+ALTER COLUMN Price int
+
 -- remove year
 update Autotrade_sp
 set Vehicle = SUBSTRING(Vehicle, CHARINDEX(' ', Vehicle) + 1, LEN(Vehicle))
@@ -199,28 +212,14 @@ SET [Power maximum (detail)(kW)] = REVERSE(SUBSTRING(REVERSE([Power maximum (det
 UPDATE Autotrade_sp
 SET [Maximum/top speed(km/h)] = REVERSE(SUBSTRING(REVERSE([Maximum/top speed(km/h)]), CHARINDEX(' ', REVERSE([Maximum/top speed(km/h)])) + 1, LEN([Maximum/top speed(km/h)])))
 
-    SET @counter = @counter + 1;
-END;
-
 UPDATE Autotrade_sp
 SET [Fuel Capacity] = REVERSE(SUBSTRING(REVERSE([Fuel Capacity]), CHARINDEX(' ', REVERSE([Fuel Capacity])) + 1, LEN([Fuel Capacity])))
 
-----------------------------------------------------------------------------------------------------------------
--- get total
-UPDATE Autotrade_sp
-SET [Fuel capacity] = 
-    CASE
-        WHEN CHARINDEX('(total', [Fuel capacity]) > 0 THEN SUBSTRING([Fuel capacity], CHARINDEX('(total', [Fuel capacity]) + 7, CHARINDEX(')', [Fuel capacity]) - CHARINDEX('(total', [Fuel capacity]) - 7)
-        ELSE [Fuel capacity]
-		END;
+    SET @counter = @counter + 1;
+END;
 
-UPDATE Autotrade_sp
-SET [Power maximum (detail)(kW)] = 
-    CASE
-        WHEN CHARINDEX('(total', [Power maximum (detail)(kW)]) > 0 THEN
-            SUBSTRING([Power maximum (detail)(kW)], CHARINDEX('(total', [Power maximum (detail)(kW)]) + 7, CHARINDEX(')', [Power maximum (detail)(kW)], CHARINDEX('(total', [Power maximum (detail)(kW)]) + 7) - CHARINDEX('(total', [Power maximum (detail)(kW)]) - 7)
-        ELSE [Power maximum (detail)(kW)]
-    END;
+
+----------------------------------------------------------------------------------------------------------------
 
    
 END;
