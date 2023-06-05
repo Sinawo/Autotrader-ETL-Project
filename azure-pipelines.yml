@@ -1,34 +1,41 @@
-name: Automated Pipeline
+schedules:
+- cron: "0 * * * *"
+88  branches:qq
+    include:
+    - Sinawo-Mod
+  displayName: Run Script Every Hour
+trigger:
+  branches:
+    include:
+    - master
+    - Sinawo-Mod
 
-on:
-  schedule:
-    - cron: "0 */6 * * *"
-  push:
-    branches:
-      - master
+pool:
+  vmImage: ubuntu-latest
 
 jobs:
-  RunScript:
-    name: Run Script
-    runs-on: ubuntu-latest
-    timeout-minutes: 720
+- job: RunScript
+  displayName: 'Run Script'
+  timeoutInMinutes: 4  # Set the timeout to 1 hour (60 minutes)
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  steps:
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install beautifulsoup4
-          pip install pyodbc
-          pip install regex
-          pip install lxml
-
-      - name: Run ssms-scraper.py
-        run: python ssms-scraper.py
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+    displayName: 'Install dependencies'
+  
+  - script: |
+      python -m pip install --upgrade pip
+      pip install install beautifulsoup4
+      pip install pyodbc
+      pip install regex
+      pip install lxml
+     
+    displayName: 'Install Python dependencies'
+  
+  - script: |
+      python ssms-scraper.py
+    displayName: 'Run ssms-scraper.py'
