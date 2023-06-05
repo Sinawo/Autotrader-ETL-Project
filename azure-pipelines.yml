@@ -20,7 +20,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.7'
 
       - name: Install dependencies
         run: |
@@ -32,21 +32,3 @@ jobs:
 
       - name: Run ssms-scraper.py
         run: python ssms-scraper.py
-
-  UpdateTheFlatTable:
-    name: Update the Flat table
-    needs: RunScript
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Execute SQL Query
-        uses: azure/sql-action@v1
-        with:
-          server-name: 'canvas-graduates.database.windows.net'
-          database-name: 'graduatesDB'
-          sql-username: 'graduates23'
-          sql-password: ${{ secrets.SQL_PASSWORD }}
-          sql-file: 'updated-info.sql'
