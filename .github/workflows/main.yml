@@ -27,6 +27,7 @@ jobs:
           pip install pyodbc
           pip install regex
           pip install lxml
+          pip install requests
 
       - name: Run ssms-scraper.py
         run: python ssms-scraper.py
