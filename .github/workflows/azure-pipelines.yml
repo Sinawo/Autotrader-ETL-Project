@@ -2,7 +2,7 @@ name: Automated Pipeline
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 * * * *"
   push:
     branches:
       - master
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.7'
 
       - name: Install dependencies
         run: |
