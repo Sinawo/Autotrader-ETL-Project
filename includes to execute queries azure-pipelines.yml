@@ -26,9 +26,6 @@ jobs:
   steps:
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
-
-
-
   - script: |
       echo Add other tasks to build, test, and deploy your project.
       echo See https://aka.ms/yaml
@@ -59,3 +56,6 @@ jobs:
       SqlUsername: 'graduates23'
       SqlPassword: 'CanGrad2023'
       SqlFile: 'AutoTrader_Schema.sql'
+      https://www.autotrader.co.za/cars-for-sale?year=more-than-2023&priceoption=RetailPrice
+      https://www.autotrader.co.za/cars-for-sale?year=2023-to-2023&priceoption=RetailPrice
+      https://www.autotrader.co.za/cars-for-sale?year=2022-to-2022&priceoption=RetailPrice
