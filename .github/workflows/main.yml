@@ -5,7 +5,7 @@ on:
     - cron: "0 */2 * * *"
   push:
     branches:
-      - Sinawo-Mod
+      - main
 jobs:
   RunScript:
     runs-on: ubuntu-latest
