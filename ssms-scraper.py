@@ -29,7 +29,6 @@ column_n = ['Car_ID','Title', 'Price', 'Car Type', 'Body Type','Registration Yea
                 'Power maximum (detail)', 'Torque maximum', 'Maximum/top speed', 'CO2 emissions (average)',
                 'Acceleration 0-100 km/h', 'Last Updated', 'Previous Owners', 'Service History', 'Colour']
 
-
 # define the connection details
 server = 'canvas-graduates.database.windows.net'
 database = 'graduatesDB'
