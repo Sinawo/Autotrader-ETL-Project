@@ -7,20 +7,23 @@ import random
 import pyodbc
 import re
 import time
-import datetime
+from datetime import datetime
+# URL of the Autotrader website
+
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
 
-
 # Define table and column names
-table_name = 'overnight_table'
+table_name = 'history_tracker'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
-                '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
+                '[Transmission]', '[Fuel Type]', '[Dealership]', '[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
                 '[Cylinder layout and quantity]', '[Fuel capacity]', '[Fuel consumption (average) **]',
                 '[Fuel range (average)]', '[Power maximum (detail)]', '[Torque maximum]',
                 '[Maximum/top speed]', '[CO2 emissions (average)]', '[Acceleration 0-100 km/h]',
-                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]']
+                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]',
+                '[Version]', '[Timestamp]']
+
 
 column_n = ['Car_ID','Title', 'Price', 'Car Type', 'Body Type','Registration Year', 'Mileage', 'Transmission',
                 'Fuel Type', 'Dealership', 'Introduction date', 'End date','Suburb',
@@ -99,7 +102,7 @@ stop_script = False
 
 # Loop through each page of cars on the Autotrader website
 #for page in range(num_iterations):
-for page in range(1, 4287):
+for page in range(1, 1):
     
     # Get the HTML content of the page
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
@@ -207,69 +210,53 @@ for page in range(1, 4287):
             
             # Construct the INSERT query
             # Construct the INSERT query
-            
-
-car_data = {
-    'Car_ID': '12345',  # Replace with the Car_ID value obtained from the website
-    'ScrapedData': 'New scraped data'  # Replace with the scraped data
-}
-
-matching_keys = [key for key in car_data.keys() if key in column_n]
-matching_values = [car_data[key] for key in matching_keys]
-
-placeholders = ', '.join(['?'] * len(matching_keys))
-column_names_with_brackets = ', '.join('"' + key + '"' for key in matching_keys)
-
-insert_query = f"""
-    -- Check if the entry already exists
-    IF EXISTS (
-        SELECT 1 FROM {table_name} WHERE Car_ID = ?
-    )
-    BEGIN
-        -- Find the latest version number
-        DECLARE @Version INT = ISNULL(MAX(Version), 0) + 1;
-
-        -- Insert the entry with versioning
-        INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
-        SELECT {placeholders}, @Version, GETDATE()
-        WHERE NOT EXISTS (
-            SELECT 1 FROM {table_name} WHERE Car_ID = ?
-        );
-    END
-    ELSE
-    BEGIN
-        -- Insert the entry without versioning
-        INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
-        SELECT {placeholders}, 1, GETDATE()
-        WHERE NOT EXISTS (
-            SELECT 1 FROM {table_name} WHERE Car_ID = ?
-        );
-    END
-"""
-
-# Append the necessary values for the query parameters
-matching_values.extend([car_data['Car_ID'], car_data['Car_ID'], car_data['Car_ID']])
-
-# Execute the query with the parameters
-cursor.execute(insert_query, matching_values)
+      
+  
 
             placeholders = ', '.join(['?'] * len(matching_keys))
-            column_names_with_brackets = ', '.join('"' + key + '"'  for key in matching_keys)
-           
+            column_names_with_brackets = ', '.join('"' + key + '"' for key in matching_keys)
+
             insert_query = f"""
-                    INSERT INTO {table_name} ({column_names_with_brackets}) 
-                    SELECT {placeholders}
+                -- Check if the entry already exists
+                IF EXISTS (
+                    SELECT 1 FROM {table_name} WHERE Car_ID = ?
+                )
+                BEGIN
+                    -- Find the latest version number
+                    DECLARE @Version INT = ISNULL(MAX(Version), 0) + 1;
+
+                    -- Insert the entry with versioning
+                    INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
+                    SELECT {placeholders}, @Version, GETDATE()
                     WHERE NOT EXISTS (
                         SELECT 1 FROM {table_name} WHERE Car_ID = ?
-                    )
-                """
-            matching_values.append(Car_ID)
+                    );
+                END
+                ELSE
+                BEGIN
+                    -- Insert the entry without versioning
+                    INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
+                    SELECT {placeholders}, 1, GETDATE()
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM {table_name} WHERE Car_ID = ?
+                    );
+                END
+            """
+
+            # Append the necessary values for the query parameters
+            matching_values.extend([car_data['Car_ID'], car_data['Car_ID'], car_data['Car_ID']])
+
+            # Execute the query with the parameters
+            cursor.execute(insert_query, matching_values)
+
             
             # matching_values.append(Car_ID)
+            
+            # # matching_values.append(Car_ID)
 
 
-            # Execute the INSERT query with the matching values
-            cursor.execute(insert_query, matching_values)
+            # # Execute the INSERT query with the matching values
+            # cursor.execute(insert_query, matching_values)
                         
             # Print the details of the car            
             
