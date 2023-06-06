@@ -52,16 +52,15 @@ conn = pyodbc.connect(
 cursor = conn.cursor()
 
 # Combine column names with data types
-# columns = ', '.join([f"{name} {data_type}" for name, data_type in zip(column_names, column_data_types)])
-# Construct the CREATE TABLE query
 column_data_types = ['VARCHAR(MAX)'] * len(column_names)
+
+# Construct the CREATE TABLE query
 create_table_query = f"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{table_name}') \
                        CREATE TABLE {table_name} ({', '.join(['{0} {1}'.format(name, data_type) for name, data_type in zip(column_names, column_data_types)])})"
 # Execute the CREATE TABLE query
 cursor.execute(create_table_query)
-
 # Commit the changes and close the connection
-
+conn.commit()
 
 # List to store the links for each car
 car_links = []
@@ -102,7 +101,7 @@ stop_script = False
 
 # Loop through each page of cars on the Autotrader website
 #for page in range(num_iterations):
-for page in range(1, 1):
+for page in range(2):
     
     # Get the HTML content of the page
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
@@ -200,51 +199,33 @@ for page in range(1, 1):
             
             car_data['Car_ID'] = Car_ID
             car_data['Suburb'] = location
+
             # Check if all values in car_data have corresponding column names
             matching_keys = [key for key in car_data.keys() if key in column_n]
-         
+            print(matching_keys)
             # Get the corresponding values for the matching keys
             matching_values = [car_data[key] for key in matching_keys]
-        
-            # print(matching_keys)
             
-            # Construct the INSERT query
-            # Construct the INSERT query
-      
-  
 
             placeholders = ', '.join(['?'] * len(matching_keys))
             column_names_with_brackets = ', '.join('"' + key + '"' for key in matching_keys)
-
+            
             insert_query = f"""
                 -- Check if the entry already exists
-                IF EXISTS (
-                    SELECT 1 FROM {table_name} WHERE Car_ID = ?
-                )
-                BEGIN
-                    -- Find the latest version number
-                    DECLARE @Version INT = ISNULL(MAX(Version), 0) + 1;
-
-                    -- Insert the entry with versioning
-                    INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
-                    SELECT {placeholders}, @Version, GETDATE()
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM {table_name} WHERE Car_ID = ?
-                    );
-                END
-                ELSE
-                BEGIN
+               
                     -- Insert the entry without versioning
                     INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
                     SELECT {placeholders}, 1, GETDATE()
                     WHERE NOT EXISTS (
                         SELECT 1 FROM {table_name} WHERE Car_ID = ?
                     );
-                END
+              
             """
 
             # Append the necessary values for the query parameters
-            matching_values.extend([car_data['Car_ID'], car_data['Car_ID'], car_data['Car_ID']])
+            # matching_values.extend([car_data['Car_ID'], car_data['Car_ID'], car_data['Car_ID']])
+            matching_values.append(Car_ID) #'], car_data['Car_ID'], car_data['Car_ID']])
+            print(matching_values)
 
             # Execute the query with the parameters
             cursor.execute(insert_query, matching_values)
