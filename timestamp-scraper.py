@@ -49,17 +49,19 @@ conn = pyodbc.connect(
 cursor = conn.cursor()
 
 # Combine column names with data types
-# columns = ', '.join([f"{name} {data_type}" for name, data_type in zip(column_names, column_data_types)])
-# Construct the CREATE TABLE query
 column_data_types = ['VARCHAR(MAX)'] * len(column_names)
+<<<<<<< HEAD
 column_data_types[column_names.index('latest_version')] = 'INT DEFAULT 0'
+=======
+
+# Construct the CREATE TABLE query
+>>>>>>> eb4d1c3503d6bc75bba9345f855386a98fa3a7c5
 create_table_query = f"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{table_name}') \
                        CREATE TABLE {table_name} ({', '.join(['{0} {1}'.format(name, data_type) for name, data_type in zip(column_names, column_data_types)])})"
 # Execute the CREATE TABLE query
 cursor.execute(create_table_query)
-
 # Commit the changes and close the connection
-
+conn.commit()
 
 # List to store the links for each car
 car_links = []
@@ -101,9 +103,14 @@ execution_time = time.time() + 3600
 stop_script = False
 
 # Loop through each page of cars on the Autotrader website
+<<<<<<< HEAD
 latest_version = 1#for page in range(num_iterations):
 jet = 1
 for i in range(1, 3):
+=======
+#for page in range(num_iterations):
+for page in range(2):
+>>>>>>> eb4d1c3503d6bc75bba9345f855386a98fa3a7c5
     
 
     print('Request on page: ' , i)
@@ -203,6 +210,7 @@ for i in range(1, 3):
             
             car_data['Car_ID'] = Car_ID
             car_data['Suburb'] = location
+
             car_data['Time_stamp'] = str(datetime.datetime.now())
             car_data['latest_version'] = latest_version
             
@@ -222,16 +230,18 @@ for i in range(1, 3):
 
            
 
-            # Check if all values in car_data have corresponding column names [the one we want only]
+
             matching_keys = [key for key in car_data.keys() if key in column_n]
-         
+            print(matching_keys)
             # Get the corresponding values for the matching keys
             matching_values = [car_data[key] for key in matching_keys]
 
-            placeholders = ', '.join(['?'] * len(matching_keys))
-            column_names_with_brackets = ', '.join('"' + key + '"'  for key in matching_keys)
-
             
+
+            placeholders = ', '.join(['?'] * len(matching_keys))
+            column_names_with_brackets = ', '.join('"' + key + '"' for key in matching_keys)
+            
+                       
 
             if result:
                 update_query = f"""
@@ -252,23 +262,10 @@ for i in range(1, 3):
                     );
                 """
                 cursor.execute(insert_query, matching_values)
-            #matching_values.append(Car_ID)  # Append Car_ID for the duplicate check
-            
-            # print(len(matching_keys))                 
-            # print(len(matching_values))
-            print( jet)
-            jet+=1
-            print("==================================")
-            
-            # Execute the INSERT query with the matching values
-            
-            #cursor.execute(insert_query, matching_values + [car_data['Car_ID']] + [car_data['Car_ID']])
-         
-            # Print the details of the car            
+          
             
             conn.commit()
 
-            # close the connection
-        
+         \
           
 conn.close()    

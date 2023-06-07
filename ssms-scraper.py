@@ -20,15 +20,14 @@ column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Y
                 '[Cylinder layout and quantity]', '[Fuel capacity]', '[Fuel consumption (average) **]',
                 '[Fuel range (average)]', '[Power maximum (detail)]', '[Torque maximum]',
                 '[Maximum/top speed]', '[CO2 emissions (average)]', '[Acceleration 0-100 km/h]',
-                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]', 'latest_version', 'Time_stamp']
+                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]', 'Latest_version', 'Time_stamp']
 
 column_n = ['Car_ID','Title', 'Price', 'Car Type', 'Body Type','Registration Year', 'Mileage', 'Transmission',
                 'Fuel Type', 'Dealership', 'Introduction date', 'End date','Suburb',
                 'Engine position', 'Engine detail', 'Engine capacity (litre)', 'Cylinder layout and quantity',
                 'Fuel capacity', 'Fuel consumption (average) **', 'Fuel range (average)',
                 'Power maximum (detail)', 'Torque maximum', 'Maximum/top speed', 'CO2 emissions (average)',
-                'Acceleration 0-100 km/h', 'Last Updated', 'Previous Owners', 'Service History', 'Colour', 'latest_version', 'Time_stamp']
-
+                'Acceleration 0-100 km/h', 'Last Updated', 'Previous Owners', 'Service History', 'Colour', 'Latest_version', 'Time_stamp']
 
 # define the connection details
 server = 'canvas-graduates.database.windows.net'
@@ -52,7 +51,7 @@ cursor = conn.cursor()
 # columns = ', '.join([f"{name} {data_type}" for name, data_type in zip(column_names, column_data_types)])
 # Construct the CREATE TABLE query
 column_data_types = ['VARCHAR(MAX)'] * len(column_names)
-column_data_types[column_names.index('latest_version')] = 'INT DEFAULT 0'
+column_data_types[column_names.index('Latest_version')] = 'INT DEFAULT 0'
 create_table_query = f"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{table_name}') \
                        CREATE TABLE {table_name} ({', '.join(['{0} {1}'.format(name, data_type) for name, data_type in zip(column_names, column_data_types)])})"
 # Execute the CREATE TABLE query
@@ -90,9 +89,8 @@ def Add_Key_Values(list, dictionary):
                     values.append(detail.text)
                     car_data[key] = value
                 i = i + 1
-                    # Add 'Time_stamp' and 'Latest' columns to the dictionary
-  
     return car_data
+
 # Generate a random number between 1 and 4340 pages
 num_iterations = random.randint(1, 4340)
 
@@ -101,14 +99,13 @@ execution_time = time.time() + 3600
 stop_script = False
 
 # Loop through each page of cars on the Autotrader website
+
 latest_version = 1#for page in range(num_iterations):
 
-for i in range(1, 4500):
-    
+for page in range(1, 4450):
 
-   
     # Get the HTML content of the page
-    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?year=1991-to-1991&priceoption=RetailPrice")
+    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
     print(response.status_code)
     home_page = BeautifulSoup(response.content, 'lxml')
     # Extract the car ID using regular expression
@@ -148,8 +145,6 @@ for i in range(1, 4500):
                     # Extract the text within the <a> tag
                     location = a_tag.get_text(strip=True)
 
-                    # Print the extracted location
-                    
                 else:
                    pass
             
@@ -204,20 +199,20 @@ for i in range(1, 4500):
             car_data['Car_ID'] = Car_ID
             car_data['Suburb'] = location
             car_data['Time_stamp'] = str(datetime.datetime.now())
-            car_data['latest_version'] = latest_version
+            car_data['Latest_version'] = latest_version
             
 
             # Check if the Car_ID exists
-            check_query = f"SELECT latest_version FROM {table_name} WHERE Car_ID = ?"
+            check_query = f"SELECT Latest_version FROM {table_name} WHERE Car_ID = ?"
             cursor.execute(check_query, (Car_ID,))
             result = cursor.fetchone()
             if result:
                   # If Car_ID exists, increment the Latest value
                 latest_version = int(result[0]) + 1
-                car_data['latest_version'] = latest_version
+                car_data['Latest_version'] = latest_version
             else:
                 # If Car_ID doesn't exist, set the Latest value to 1
-                car_data['latest_version'] = latest_version
+                car_data['Latest_version'] = latest_version
 
             # Check if all values in car_data have corresponding column names [the one we want only]
             matching_keys = [key for key in car_data.keys() if key in column_n]
@@ -252,5 +247,5 @@ for i in range(1, 4500):
 
             # close the connection
         
-          
+# close the connection        
 conn.close()    
