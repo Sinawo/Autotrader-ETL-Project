@@ -7,30 +7,27 @@ import random
 import pyodbc
 import re
 import time
-from datetime import datetime
-# URL of the Autotrader website
-
+import datetime
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
 
+
 # Define table and column names
-table_name = 'history_tracker'
+table_name = 'overnight_table'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
-                '[Transmission]', '[Fuel Type]', '[Dealership]', '[Suburb]', '[Introduction date]',
+                '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
                 '[Cylinder layout and quantity]', '[Fuel capacity]', '[Fuel consumption (average) **]',
                 '[Fuel range (average)]', '[Power maximum (detail)]', '[Torque maximum]',
                 '[Maximum/top speed]', '[CO2 emissions (average)]', '[Acceleration 0-100 km/h]',
-                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]',
-                '[Version]', '[Timestamp]']
-
+                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]', 'latest_version', 'Time_stamp']
 
 column_n = ['Car_ID','Title', 'Price', 'Car Type', 'Body Type','Registration Year', 'Mileage', 'Transmission',
                 'Fuel Type', 'Dealership', 'Introduction date', 'End date','Suburb',
                 'Engine position', 'Engine detail', 'Engine capacity (litre)', 'Cylinder layout and quantity',
                 'Fuel capacity', 'Fuel consumption (average) **', 'Fuel range (average)',
                 'Power maximum (detail)', 'Torque maximum', 'Maximum/top speed', 'CO2 emissions (average)',
-                'Acceleration 0-100 km/h', 'Last Updated', 'Previous Owners', 'Service History', 'Colour']
+                'Acceleration 0-100 km/h', 'Last Updated', 'Previous Owners', 'Service History', 'Colour', 'latest_version', 'Time_stamp']
 
 
 # define the connection details
@@ -55,6 +52,7 @@ cursor = conn.cursor()
 # columns = ', '.join([f"{name} {data_type}" for name, data_type in zip(column_names, column_data_types)])
 # Construct the CREATE TABLE query
 column_data_types = ['VARCHAR(MAX)'] * len(column_names)
+column_data_types[column_names.index('latest_version')] = 'INT DEFAULT 0'
 create_table_query = f"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{table_name}') \
                        CREATE TABLE {table_name} ({', '.join(['{0} {1}'.format(name, data_type) for name, data_type in zip(column_names, column_data_types)])})"
 # Execute the CREATE TABLE query
@@ -92,6 +90,8 @@ def Add_Key_Values(list, dictionary):
                     values.append(detail.text)
                     car_data[key] = value
                 i = i + 1
+                    # Add 'Time_stamp' and 'Latest' columns to the dictionary
+  
     return car_data
 # Generate a random number between 1 and 4340 pages
 num_iterations = random.randint(1, 4340)
@@ -101,11 +101,14 @@ execution_time = time.time() + 3600
 stop_script = False
 
 # Loop through each page of cars on the Autotrader website
-#for page in range(num_iterations):
-for page in range(1, 1):
+latest_version = 1#for page in range(num_iterations):
+jet = 1
+for i in range(1, 3):
     
+
+    print('Request on page: ' , i)
     # Get the HTML content of the page
-    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
+    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?year=1991-to-1991&priceoption=RetailPrice")
     print(response.status_code)
     home_page = BeautifulSoup(response.content, 'lxml')
     # Extract the car ID using regular expression
@@ -200,64 +203,67 @@ for page in range(1, 1):
             
             car_data['Car_ID'] = Car_ID
             car_data['Suburb'] = location
-            # Check if all values in car_data have corresponding column names
+            car_data['Time_stamp'] = str(datetime.datetime.now())
+            car_data['latest_version'] = latest_version
+            
+
+            # Check if the Car_ID exists
+            check_query = f"SELECT latest_version FROM {table_name} WHERE Car_ID = ?"
+            cursor.execute(check_query, (Car_ID,))
+            result = cursor.fetchone()
+            if result:
+        # If Car_ID exists, increment the Latest value
+                latest_version = int(result[0]) + 1
+                car_data['latest_version'] = latest_version
+            else:
+                # If Car_ID doesn't exist, set the Latest value to 1
+                car_data['latest_version'] = latest_version
+
+
+           
+
+            # Check if all values in car_data have corresponding column names [the one we want only]
             matching_keys = [key for key in car_data.keys() if key in column_n]
          
             # Get the corresponding values for the matching keys
             matching_values = [car_data[key] for key in matching_keys]
-        
-            # print(matching_keys)
-            
-            # Construct the INSERT query
-            # Construct the INSERT query
-      
-  
 
             placeholders = ', '.join(['?'] * len(matching_keys))
-            column_names_with_brackets = ', '.join('"' + key + '"' for key in matching_keys)
-
-            insert_query = f"""
-                -- Check if the entry already exists
-                IF EXISTS (
-                    SELECT 1 FROM {table_name} WHERE Car_ID = ?
-                )
-                BEGIN
-                    -- Find the latest version number
-                    DECLARE @Version INT = ISNULL(MAX(Version), 0) + 1;
-
-                    -- Insert the entry with versioning
-                    INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
-                    SELECT {placeholders}, @Version, GETDATE()
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM {table_name} WHERE Car_ID = ?
-                    );
-                END
-                ELSE
-                BEGIN
-                    -- Insert the entry without versioning
-                    INSERT INTO {table_name} ({column_names_with_brackets}, Version, Timestamp)
-                    SELECT {placeholders}, 1, GETDATE()
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM {table_name} WHERE Car_ID = ?
-                    );
-                END
-            """
-
-            # Append the necessary values for the query parameters
-            matching_values.extend([car_data['Car_ID'], car_data['Car_ID'], car_data['Car_ID']])
-
-            # Execute the query with the parameters
-            cursor.execute(insert_query, matching_values)
+            column_names_with_brackets = ', '.join('"' + key + '"'  for key in matching_keys)
 
             
-            # matching_values.append(Car_ID)
+
+            if result:
+                update_query = f"""
+                    UPDATE {table_name}
+                    SET {', '.join([f'"{key}" = ?' for key in matching_keys])}
+                    WHERE Car_ID = ?;
+                """
+                matching_values.append(Car_ID)  # Append Car_ID for the WHERE clause
+                cursor.execute(update_query, matching_values)
+            else:
+                # If Car_ID doesn't exist, set the Latest value to 1
+                insert_query = f"""
+                    INSERT INTO {table_name} (
+                        {column_names_with_brackets}
+                    )
+                    VALUES (
+                        {placeholders}
+                    );
+                """
+                cursor.execute(insert_query, matching_values)
+            #matching_values.append(Car_ID)  # Append Car_ID for the duplicate check
             
-            # # matching_values.append(Car_ID)
-
-
-            # # Execute the INSERT query with the matching values
-            # cursor.execute(insert_query, matching_values)
-                        
+            # print(len(matching_keys))                 
+            # print(len(matching_values))
+            print( jet)
+            jet+=1
+            print("==================================")
+            
+            # Execute the INSERT query with the matching values
+            
+            #cursor.execute(insert_query, matching_values + [car_data['Car_ID']] + [car_data['Car_ID']])
+         
             # Print the details of the car            
             
             conn.commit()
