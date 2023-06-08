@@ -2,7 +2,7 @@ name: Automated Pipeline
 
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */9 * * *"
   push:
     branches:
       - main
