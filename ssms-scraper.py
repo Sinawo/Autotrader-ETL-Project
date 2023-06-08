@@ -210,10 +210,11 @@ for page in range(1, 4450):
                   # If Car_ID exists, increment the Latest value
                 latest_version = int(result[0]) + 1
                 car_data['Latest_version'] = latest_version
+            
             else:
                 # If Car_ID doesn't exist, set the Latest value to 1
                 car_data['Latest_version'] = latest_version
-
+             
             # Check if all values in car_data have corresponding column names [the one we want only]
             matching_keys = [key for key in car_data.keys() if key in column_n]
          
