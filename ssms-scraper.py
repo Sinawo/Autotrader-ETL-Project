@@ -96,7 +96,7 @@ num_iterations = random.randint(1, 4340)
 
 # Set the desired execution time to one hour (3600 seconds)
 execution_time = time.time() + 3600
-stop_script = False
+
 
 # Loop through each page of cars on the Autotrader website
 
@@ -112,17 +112,13 @@ for page in range(1, 4450):
     
     # Find all the car listings on the page
     cars_containers = home_page.find_all('div', attrs={'class': 'b-result-tiles'})
-    if stop_script:
-        break
+
     # Loop through each car listing
     
     for each_div in cars_containers:
-        if stop_script:
-            break
-        # Find the link to the car listing
+          # Find the link to the car listing
         for link in each_div.find_all('a', href=True):
-            if time.time() >= execution_time :
-                stop_script = True
+            if time.time() >= execution_time:
                 time.sleep(300)
             try:
                 found_link = (base_url + link['href'])
