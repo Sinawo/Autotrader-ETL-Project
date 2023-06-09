@@ -33,12 +33,12 @@ jobs:
         run: python ssms-scraper.py
 
       - name: Execute SQL scripts
-        uses: microsoft/azure-sql-action@v1
-        with:
-          server-name: 'your-server-name'
-          server-admin-login: 'your-admin-login'
-          server-admin-password: 'your-admin-password'
-          database-name: 'your-database-name'
-          sql-file: 'sql/your-sql-script.sql'
+        env:
+          AZURE_SQL_SERVER_NAME: canvas-graduates.database.windows.net
+          AZURE_SQL_SERVER_ADMIN_LOGIN: graduates23
+          AZURE_SQL_SERVER_ADMIN_PASSWORD: CanGrad2023
+          AZURE_SQL_DATABASE_NAME: graduatesDB
+        run: |
+          az sql db execute -s $AZURE_SQL_SERVER_NAME -n $AZURE_SQL_DATABASE_NAME -u $AZURE_SQL_SERVER_ADMIN_LOGIN -p $AZURE_SQL_SERVER_ADMIN_PASSWORD -f SQL_Queries/Update Flat n Clean.sql
 
     
