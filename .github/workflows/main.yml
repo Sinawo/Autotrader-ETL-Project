@@ -2,10 +2,11 @@ name: Automated Pipeline
 
 on:
   schedule:
-    - cron: "0 */9 * * *"
+    - cron: "0 */6 * * *"
   push:
     branches:
-      - main
+      - Sinawo-Mod
+
 jobs:
   RunScript:
     runs-on: ubuntu-latest
@@ -27,16 +28,17 @@ jobs:
           pip install pyodbc
           pip install regex
           pip install lxml
-          pip install requests
 
       - name: Run ssms-scraper.py
         run: python ssms-scraper.py
 
-      - name: Execute Update Flat n Clean SQL script
+      - name: Execute SQL scripts
         uses: microsoft/azure-sql-action@v1
         with:
-          server-name: 'canvas-graduates.database.windows.net'
-          server-admin-login: 'graduates23'
-          sql-file: 'SQL_Queries/Update Flat n Clean.sql'
+          server-name: 'your-server-name'
+          server-admin-login: 'your-admin-login'
+          server-admin-password: 'your-admin-password'
+          database-name: 'your-database-name'
+          sql-file: 'sql/your-sql-script.sql'
 
-     
+    
