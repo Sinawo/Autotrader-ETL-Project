@@ -20,14 +20,15 @@ column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Y
                 '[Cylinder layout and quantity]', '[Fuel capacity]', '[Fuel consumption (average) **]',
                 '[Fuel range (average)]', '[Power maximum (detail)]', '[Torque maximum]',
                 '[Maximum/top speed]', '[CO2 emissions (average)]', '[Acceleration 0-100 km/h]',
-                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]', 'Latest_version', 'Time_stamp']
+                '[Last Updated]', '[Previous Owners]', '[Service History]', '[Colour]', '[Body Type]', 'First_Entry_Timestamp',  'latest_version', 'Time_stamp']
 
 column_n = ['Car_ID','Title', 'Price', 'Car Type', 'Body Type','Registration Year', 'Mileage', 'Transmission',
                 'Fuel Type', 'Dealership', 'Introduction date', 'End date','Suburb',
                 'Engine position', 'Engine detail', 'Engine capacity (litre)', 'Cylinder layout and quantity',
                 'Fuel capacity', 'Fuel consumption (average) **', 'Fuel range (average)',
                 'Power maximum (detail)', 'Torque maximum', 'Maximum/top speed', 'CO2 emissions (average)',
-                'Acceleration 0-100 km/h', 'Last Updated', 'Previous Owners', 'Service History', 'Colour', 'Latest_version', 'Time_stamp']
+                'Acceleration 0-100 km/h', 'Last Updated', 'Previous Owners', 'Service History', 'Colour','First_Entry_Timestamp' 'latest_version', 'Time_stamp']
+
 
 # define the connection details
 server = 'canvas-graduates.database.windows.net'
@@ -48,17 +49,19 @@ conn = pyodbc.connect(
 cursor = conn.cursor()
 
 # Combine column names with data types
-# columns = ', '.join([f"{name} {data_type}" for name, data_type in zip(column_names, column_data_types)])
-# Construct the CREATE TABLE query
 column_data_types = ['VARCHAR(MAX)'] * len(column_names)
-column_data_types[column_names.index('Latest_version')] = 'INT DEFAULT 0'
+
+column_data_types[column_names.index('latest_version')] = 'INT DEFAULT 1'
+
+
+# Construct the CREATE TABLE query
+
 create_table_query = f"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{table_name}') \
                        CREATE TABLE {table_name} ({', '.join(['{0} {1}'.format(name, data_type) for name, data_type in zip(column_names, column_data_types)])})"
 # Execute the CREATE TABLE query
 cursor.execute(create_table_query)
-
 # Commit the changes and close the connection
-
+conn.commit()
 
 # List to store the links for each car
 car_links = []
@@ -89,41 +92,52 @@ def Add_Key_Values(list, dictionary):
                     values.append(detail.text)
                     car_data[key] = value
                 i = i + 1
+                    # Add 'Time_stamp' and 'Latest' columns to the dictionary
+  
     return car_data
-
 # Generate a random number between 1 and 4340 pages
 num_iterations = random.randint(1, 4340)
-
+First_Entry_Timestamp = datetime.datetime.now()
 # Set the desired execution time to one hour (3600 seconds)
 execution_time = time.time() + 3600
-
+stop_script = False
 
 # Loop through each page of cars on the Autotrader website
+#for page in range(num_iterations):
+for page in range(1, 2):
+    
 
-latest_version = 1#for page in range(num_iterations):
-
-for page in range(1, 4450):
-
+    
     # Get the HTML content of the page
+    
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
+
     print(response.status_code)
     home_page = BeautifulSoup(response.content, 'lxml')
     # Extract the car ID using regular expression
     
     # Find all the car listings on the page
-    cars_containers = home_page.find_all('div', attrs={'class': 'b-result-tiles'})
+    
+    cars_containers = home_page.find_all('div', attrs={'class': re.compile(r'b-result-tile .*')})
+  
 
+    if stop_script:
+        break
     # Loop through each car listing
     
     for each_div in cars_containers:
-          # Find the link to the car listing
+        if stop_script:
+            break
+        # Find the link to the car listing
+      
         for link in each_div.find_all('a', href=True):
-            if time.time() >= execution_time:
-                time.sleep(300)
+            if time.time() >= execution_time :
+                stop_script = True
+                time.sleep(120)
             try:
                 found_link = (base_url + link['href'])
                 Car_ID = re.search(r'/(\d+)\?', found_link).group(1)
-                
+               
             except:
                  continue
 
@@ -141,6 +155,8 @@ for page in range(1, 4450):
                     # Extract the text within the <a> tag
                     location = a_tag.get_text(strip=True)
 
+                    # Print the extracted location
+                    
                 else:
                    pass
             
@@ -195,22 +211,38 @@ for page in range(1, 4450):
             car_data['Car_ID'] = Car_ID
             car_data['Suburb'] = location
             car_data['Time_stamp'] = str(datetime.datetime.now())
-            car_data['Latest_version'] = latest_version
+            
             
 
             # Check if the Car_ID exists
-            check_query = f"SELECT Latest_version FROM {table_name} WHERE Car_ID = ?"
-            cursor.execute(check_query, (Car_ID,))
+            check_query = f"SELECT latest_version FROM {table_name} WHERE Car_ID = ?"
+            cursor.execute(check_query, (Car_ID))
             result = cursor.fetchone()
-            if result:
+        
+            if result is not None:
                   # If Car_ID exists, increment the Latest value
-                latest_version = int(result[0]) + 1
-                car_data['Latest_version'] = latest_version
-            
+                cursor.execute(f"UPDATE {table_name} SET Latest_version =  Latest_version + 1 \
+                               WHERE Car_ID = ? ", Car_ID)   
             else:
                 # If Car_ID doesn't exist, set the Latest value to 1
-                car_data['Latest_version'] = latest_version
-             
+                cursor.execute(f"UPDATE {table_name} SET Latest_version = 1\
+                               WHERE Car_ID = ? ", Car_ID)
+            # Check if the Car_ID exists
+            check_query = f"SELECT First_Entry_Timestamp FROM {table_name} WHERE Car_ID = ?"
+            cursor.execute(check_query, (Car_ID,))
+            result = cursor.fetchone()  
+            
+
+            if result is not None:
+                # Car_ID exists, do not modify 'First_Entry_Timestamp'
+                pass
+            else:
+                # Car_ID does not exist, add current timestamp to 'First_Entry_Timestamp'
+                car_data['First_Entry_Timestamp'] = datetime.datetime.now()
+              
+
+                           
+
             # Check if all values in car_data have corresponding column names [the one we want only]
             matching_keys = [key for key in car_data.keys() if key in column_n]
          
@@ -239,10 +271,9 @@ for page in range(1, 4450):
                     );
                 """
                 cursor.execute(insert_query, matching_values)
-       
+            
             conn.commit()
 
-            # close the connection
-        
-# close the connection        
+
+          
 conn.close()    

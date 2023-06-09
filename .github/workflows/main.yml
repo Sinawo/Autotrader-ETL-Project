@@ -37,7 +37,6 @@ jobs:
         with:
           server-name: 'canvas-graduates.database.windows.net'
           server-admin-login: 'graduates23'
-          server-admin-password: 'CanGrad2023'
-          database-name: 'graduatesDB'
           sql-file: 'SQL_Queries/Update Flat n Clean.sql'
 
+     
