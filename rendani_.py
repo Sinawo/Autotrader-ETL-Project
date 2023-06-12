@@ -19,7 +19,7 @@ driver = '{ODBC Driver 17 for SQL Server}'
 conn = pyodbc.connect('DRIVER=' + driver + ';SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
 
 # SQL query to select the table data
-sql_query = 'SELECT * FROM Recent_dealers'
+sql_query = 'SELECT * FROM All_Autotrader_Dealers'
 
 # Execute the SQL query and fetch the results into a Pandas DataFrame
 df = pd.read_sql(sql_query, conn)
@@ -63,7 +63,7 @@ def find_car_make(dealer):
     return None
 
 # Apply the function to create a new column with the car make found
-df["CarMake"] = df["dealer"].apply(find_car_make)
+df["CarMake"] = df["Dealer"].apply(find_car_make)
 
 # Sort the DataFrame by the car make column
 df.sort_values(by="CarMake", inplace=True)
@@ -77,18 +77,24 @@ conn = pyodbc.connect('DRIVER=' + driver + ';SERVER=' + server +
 # Create a cursor object to interact with the database
 cursor = conn.cursor()
     
-# Create the table if it doesn't exist
+# Drop the table if it exists
 cursor.execute("""
-    IF OBJECT_ID('dealers', 'U') IS NULL
+    IF OBJECT_ID('dealers', 'U') IS NOT NULL
+    DROP TABLE dealers
+""")
+
+# Create the table
+cursor.execute("""
     CREATE TABLE dealers (
         DealerName VARCHAR(100),
         CarMake VARCHAR(50)
     )
 """)
 
+
 # Iterate over the DataFrame rows and insert data into the table
 for _, row in df.iterrows():
-    dealer_name = row['dealer']
+    dealer_name = row['Dealer']
     car_make = row['CarMake']
     cursor.execute("INSERT INTO dealers (DealerName, CarMake) VALUES (?, ?)",
                    dealer_name, car_make)
@@ -102,7 +108,3 @@ print("Data has been saved to the database table.")
 
 
 # In[ ]:
-
-
-
-
