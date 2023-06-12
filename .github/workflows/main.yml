@@ -32,6 +32,9 @@ jobs:
       - name: Run ssms-scraper.py
         run: python ssms-scraper.py
 
+      - name: Run creates table car-make-make-dealerships
+        run: python car-make-dealerships
+
       - name: Execute SQL scripts
         env:
           AZURE_SQL_SERVER_NAME: canvas-graduates.database.windows.net
@@ -39,6 +42,6 @@ jobs:
           AZURE_SQL_SERVER_ADMIN_PASSWORD: CanGrad2023
           AZURE_SQL_DATABASE_NAME: graduatesDB
         run: |
-          az sql db execute -s $AZURE_SQL_SERVER_NAME -n $AZURE_SQL_DATABASE_NAME -u $AZURE_SQL_SERVER_ADMIN_LOGIN -p $AZURE_SQL_SERVER_ADMIN_PASSWORD -f SQL_Queries/Update Flat n Clean.sql
+          az sql db execute -s $AZURE_SQL_SERVER_NAME -n $AZURE_SQL_DATABASE_NAME -u $AZURE_SQL_SERVER_ADMIN_LOGIN -p $AZURE_SQL_SERVER_ADMIN_PASSWORD -f SQL_Queries/Update_Schema.sql
 
     

@@ -13,7 +13,7 @@ base_url = "https://www.autotrader.co.za"
 
 
 # Define table and column names
-table_name = 'overnight_table'
+table_name = 'testing_page_4000'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
                 '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
@@ -104,13 +104,16 @@ stop_script = False
 
 # Loop through each page of cars on the Autotrader website
 #for page in range(num_iterations):
-for page in range(1, 2):
+page = 4000
+while page <= 4000:
     
 
     
     # Get the HTML content of the page
     
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
+    #response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
+    page += page
 
     print(response.status_code)
     home_page = BeautifulSoup(response.content, 'lxml')
@@ -224,22 +227,15 @@ for page in range(1, 2):
                 cursor.execute(f"UPDATE {table_name} SET Latest_version =  Latest_version + 1 \
                                WHERE Car_ID = ? ", Car_ID)   
             else:
+               
                 # If Car_ID doesn't exist, set the Latest value to 1
                 cursor.execute(f"UPDATE {table_name} SET Latest_version = 1\
                                WHERE Car_ID = ? ", Car_ID)
+                cursor.execute(f"UPDATE {table_name} SET First_Entry_Timestamp = GETDATE()\
+                               WHERE Car_ID = ? ", Car_ID)
+                
             # Check if the Car_ID exists
-            check_query = f"SELECT First_Entry_Timestamp FROM {table_name} WHERE Car_ID = ?"
-            cursor.execute(check_query, (Car_ID,))
-            result = cursor.fetchone()  
-            
-
-            if result is not None:
-                # Car_ID exists, do not modify 'First_Entry_Timestamp'
-                pass
-            else:
-                # Car_ID does not exist, add current timestamp to 'First_Entry_Timestamp'
-                car_data['First_Entry_Timestamp'] = datetime.datetime.now()
-              
+          
 
                            
 
@@ -251,7 +247,8 @@ for page in range(1, 2):
 
             placeholders = ', '.join(['?'] * len(matching_keys))
             column_names_with_brackets = ', '.join('"' + key + '"'  for key in matching_keys)
-
+            print(matching_keys)
+            print(matching_values)
             if result:
                 update_query = f"""
                     UPDATE {table_name}

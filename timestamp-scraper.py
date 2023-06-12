@@ -104,13 +104,10 @@ stop_script = False
 
 # Loop through each page of cars on the Autotrader website
 #for page in range(num_iterations):
-for page in range(1, 2):
+for year in range(1, 2):
+    # Get the HTML content of the pagehttps://www.autotrader.co.za/cars-for-sale?year=1991-to-1991&priceoption=RetailPrice
     
-
-    
-    # Get the HTML content of the page
-    
-    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
+    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?sortorder=Newest&year=2023-to-2023&priceoption=RetailPrice")
 
     print(response.status_code)
     home_page = BeautifulSoup(response.content, 'lxml')
