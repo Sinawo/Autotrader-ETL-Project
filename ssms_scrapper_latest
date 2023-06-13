@@ -8,6 +8,7 @@ import pyodbc
 import re
 import time
 import datetime
+from requests.exceptions import ConnectTimeout
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
 
