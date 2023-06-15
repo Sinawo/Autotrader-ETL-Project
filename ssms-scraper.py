@@ -8,9 +8,13 @@ import pyodbc
 import re
 import time
 import datetime
+import os
+import math
+from datetime import datetime
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
 
+MIN_YEAR = 1990
 
 # Define table and column names
 table_name = 'Test_2023_2023'
@@ -73,6 +77,21 @@ vehicle_details = []
 # List to store the specifications for each car
 specifications = []
 
+# Function to get the last scraped page and year
+def get_last_scraped_page_and_year():
+    if os.path.exists("last_page.txt"):
+        with open("last_page.txt", "r") as file:
+            last_page, last_year = map(int, file.read().split(','))
+            return last_page, last_year
+    else:
+        return 1, datetime.datetime.now().year  # Default values if the file doesn't exist
+
+
+# Function to update the last scraped page and year
+def update_last_scraped_page_and_year(page, year):
+    with open("last_page.txt", "w") as file:
+        file.write(f"{page},{year}")
+
 # Function to convert a list to a dictionary
 def Convert(lst):
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
@@ -95,50 +114,59 @@ def Add_Key_Values(list, dictionary):
                     # Add 'Time_stamp' and 'Latest' columns to the dictionary
   
     return car_data
-# Generate a random number between 1 and 4340 pages
-num_iterations = random.randint(1, 4340)
+# Function to get the last page for a specific year
+def get_last_page(year):
+    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?year={year}-to-{year}")
+        
+    # Extract the total number of listings
+    total_listings = int(response.json()["TotalResults"])
+    
+    # Determine the number of pages based on the number of listings per page (e.g., 24 listings per page)
+    listings_per_page = 20
+    last_page = math.ceil(total_listings / listings_per_page)
+    
+    return last_page
+
 First_Entry_Timestamp = datetime.datetime.now()
 # Set the desired execution time to one hour (3600 seconds)
 execution_time = time.time() + 3600
-stop_script = False
 
+# Starting page number and year
+start_page, start_year = get_last_scraped_page_and_year()
+year = start_year
+#last page for all total listings for a specific year 
+last_page = get_last_page(year)
 # Loop through each page of cars on the Autotrader website
 #for page in range(num_iterations):
+for page in range(start_page, last_page + 1):
 
-for page in range(1, 1044):
+    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=PriceLow&year={year}-to-{year}&priceoption=RetailPrice")
     
+    # If you have finished scraping all pages for a specific year, 
+    # move to the next year and reset the last scraped page to 1
+    if page == last_page:
+        page = 1
+        year -= 1
+        update_last_scraped_page_and_year(page, year)  # Reset to the first page
+        
 
-    
-    # Get the HTML content of the page
-    
-    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=PriceLow&year=2023-to-2023&priceoption=RetailPrice")
-    #response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=Newest&priceoption=RetailPrice")
 
-
-    
+    print(response.status_code)
     home_page = BeautifulSoup(response.content, 'lxml')
-    # Extract the car ID using regular expression
     
-    # Find all the car listings on the page
     
+    # Find all the car listings on the page 
     cars_containers = home_page.find_all('div', attrs={'class': re.compile(r'b-result-tile .*')})
-  
-
-    if stop_script:
-        break
     # Loop through each car listing
-    
+
     for each_div in cars_containers:
-        if stop_script:
-            break
-        # Find the link to the car listing
-      
+        # Find the link to the car listing   
         for link in each_div.find_all('a', href=True):
-            if time.time() >= execution_time :
-                stop_script = True
+            if time.time() >= execution_time: 
                 time.sleep(120)
             try:
                 found_link = (base_url + link['href'])
+                # Extract the car ID using regular expression
                 Car_ID = re.search(r'/(\d+)\?', found_link).group(1)
                
             except:
@@ -156,10 +184,7 @@ for page in range(1, 1044):
 
                 if a_tag:
                     # Extract the text within the <a> tag
-                    location = a_tag.get_text(strip=True)
-
-                    # Print the extracted location
-                    
+                    location = a_tag.get_text(strip=True)                   
                 else:
                    pass
             
@@ -234,7 +259,7 @@ for page in range(1, 1044):
                 
             # Check if the Car_ID exists
             check_query = f"SELECT First_Entry_Timestamp FROM {table_name} WHERE Car_ID = ?"
-            cursor.execute(check_query, (Car_ID,))
+            cursor.execute(check_query, (Car_ID))
             result = cursor.fetchone()
             if result is not None and result[0] is not None:
                 # Car_ID exists, do not modify 'First_Entry_Timestamp'

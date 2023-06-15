@@ -1,47 +1,68 @@
-name: Automated Pipeline
-
-on:
-  schedule:
-    - cron: "0 */6 * * *"
-  push:
-    branches:
-      - Sinawo-Mod
-
-jobs:
-  RunScript:
-    runs-on: ubuntu-latest
-    timeout-minutes: 720
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install dependencies
-        run: |
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+schedules:
+- cron: "0 * * * *"
+  branches:
+      include:
+      - master
+  displayName: Run Script Every Hour
+  trigger:
+  - master
+  
+  pool:
+    vmImage: ubuntu-latest
+  
+  
+  jobs:
+  - job: RunScript
+    displayName: 'Run Script'
+    timeoutInMinutes: 720  # Set the timeout to 12 hours (720 minutes)
+  
+  - checkout: self
+  
+  - task: UsePythonVersion@0
+    inputs:
+        versionSpec: '3.7'
+        addToPath: true
+  
+  - task: PythonScript@0
+    displayName: Install dependencies
+    inputs:
+        scriptSource: inline
+        script: |
           python -m pip install --upgrade pip
           pip install beautifulsoup4
           pip install pyodbc
           pip install regex
           pip install lxml
-
-      - name: Run ssms-scraper.py
-        run: python ssms-scraper.py
-
-      - name: Run creates table car-make-make-dealerships
-        run: python car-make-dealerships
-
-      - name: Execute SQL scripts
-        env:
-          AZURE_SQL_SERVER_NAME: canvas-graduates.database.windows.net
-          AZURE_SQL_SERVER_ADMIN_LOGIN: graduates23
-          AZURE_SQL_SERVER_ADMIN_PASSWORD: CanGrad2023
-          AZURE_SQL_DATABASE_NAME: graduatesDB
-        run: |
-          az sql db execute -s $AZURE_SQL_SERVER_NAME -n $AZURE_SQL_DATABASE_NAME -u $AZURE_SQL_SERVER_ADMIN_LOGIN -p $AZURE_SQL_SERVER_ADMIN_PASSWORD -f SQL_Queries/Update_Schema.sql
-
-    
+  
+  - task: PythonScript@0
+    displayName: Run ssms-scraper.py
+    inputs:
+        scriptSource: filePath
+        scriptPath: ssms-scraper.py
+  
+  - task: PythonScript@0
+    displayName: Run creates table car-make-make-dealerships
+    inputs:
+        scriptSource: filePath
+        scriptPath: car-make-dealerships.py
+  
+  - task: PowerShell@2
+    displayName: Execute SQL scripts
+    env:
+      AZURE_SQL_SERVER_NAME: 'canvas-graduates.database.windows.net'
+      AZURE_SQL_SERVER_ADMIN_LOGIN: 'graduates23'
+      AZURE_SQL_SERVER_ADMIN_PASSWORD: 'CanGrad2023'
+      AZURE_SQL_DATABASE_NAME: 'graduatesDB'
+    inputs:
+      targetType: 'inline'
+      script: |
+           az extension add --name sql
+           az sql db execute -s $(AZURE_SQL_SERVER_NAME) -n $(AZURE_SQL_DATABASE_NAME) -u $(AZURE_SQL_SERVER_ADMIN_LOGIN) -p $(AZURE_SQL_SERVER_ADMIN_PASSWORD) -f ./SQL_Queries/Update_Schema.sql
+  
+  
+  
+  
