@@ -17,7 +17,7 @@ base_url = "https://www.autotrader.co.za"
 MIN_YEAR = 1990
 
 # Define table and column names
-table_name = 'Autotrader_dataset'
+table_name = 'Test2minutes'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
                 '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
@@ -165,7 +165,9 @@ for page in range(start_page, last_page + 1):
         # Find the link to the car listing   
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
-                time.sleep(120)
+                update_last_scraped_page_and_year(page, year) 
+                execution_time += 3720
+                time.sleep(60)
             try:
                 found_link = (base_url + link['href'])
                 # Extract the car ID using regular expression
