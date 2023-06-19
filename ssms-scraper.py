@@ -17,7 +17,7 @@ base_url = "https://www.autotrader.co.za"
 MIN_YEAR = 1990
 
 # Define table and column names
-table_name = 'Test2minutes'
+table_name = 'autotrader_dataset'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
                 '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
