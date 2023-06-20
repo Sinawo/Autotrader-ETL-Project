@@ -15,9 +15,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          repository: Sinawo/Webscraper_CI
-          ref: Mukhethwa
 
       - name: Setup Python
         uses: actions/setup-python@v2
@@ -34,6 +31,9 @@ jobs:
           pip install requests
           pip install PyGithub
           pip install gitpython
+
+      - name: Clone repository
+        run: git clone https://github.com/Sinawo/Webscraper_CI.git
 
       - name: Run ssms_scraper.py
         run: python ssms_scraper.py
