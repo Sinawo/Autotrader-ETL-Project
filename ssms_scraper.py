@@ -100,7 +100,7 @@ def update_last_scraped_page_and_year(page, year):
     file_path = "last_page.txt"
     commit_message = "Update last scraped page and year"
 
-    repo_path = f"{repository_owner}/{repository_name}"
+    repo_path = f"Sinawo/Webscraper_CI"
     repo = Repo(repo_path)
 
     # Fetch the latest changes from the remote repository
