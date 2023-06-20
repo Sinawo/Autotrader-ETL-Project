@@ -2,10 +2,11 @@ name: Automated Pipeline
 
 on:
   schedule:
-    #- cron: "0 */2 * * *"
+    - cron: "0 */2 * * *"
   push:
     branches:
       - main
+
 jobs:
   RunScript:
     runs-on: ubuntu-latest
@@ -14,6 +15,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          repository: Sinawo/Webscraper_CI
+          ref: Mukhethwa
 
       - name: Setup Python
         uses: actions/setup-python@v2
@@ -28,19 +32,7 @@ jobs:
           pip install regex
           pip install lxml
           pip install requests
+          pip install PyGithub
 
-      - name: Run ssms-scraper.py
-        run: python ssms-scraper.py
-      # - name: Run car-make-dealerships.py
-      #   run: python car-make-dealerships.py
-
-      # - name: Execute Stored Procedures
-      #   uses: Azure/cli@v1.0.7
-      #   with:
-      #     inlineScript: |
-      #       az sql db exec-sp -s web-development.database.windows.net -d graduates -u Canvas -p Dut950505 --name [dbo].[Create_Clean_Flat_Updated_table]
-      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[SplitDealers_SP]
-      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[CreateDealerTables]
-      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[Update_DimDealerships]
-      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[Update_DimVehicle]
-      #       # Add more commands for other stored procedures
+      - name: Run ssms_scraper.py
+        run: python ssms_scraper.py
