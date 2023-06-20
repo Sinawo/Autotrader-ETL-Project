@@ -8,11 +8,12 @@ import pandas as pd
 import pyodbc
 import re
 
-# Connection details
-server = 'canvas-graduates.database.windows.net'
-database = 'graduatesDB'
-username = 'graduates23'
-password = 'CanGrad2023'
+
+# define the connection details
+server = 'web-development.database.windows.net'
+database = 'graduates'
+username = 'Canvas'
+password = 'Dut950505'
 driver = '{ODBC Driver 17 for SQL Server}'
 
 # Establish a connection to the database
@@ -55,15 +56,15 @@ car_makes = [
 ]
 
 # Function to search for car make in the dealer name
-def find_car_make(dealer):
+def find_car_make(dealership):
     for car_make in car_makes:
         pattern = r'\b{}\b'.format(re.escape(car_make))
-        if re.search(pattern, dealer, re.IGNORECASE):
+        if re.search(pattern, dealership, re.IGNORECASE):
             return car_make
     return None
 
 # Apply the function to create a new column with the car make found
-df["CarMake"] = df["Dealer"].apply(find_car_make)
+df["CarMake"] = df["Dealership"].apply(find_car_make)
 
 # Sort the DataFrame by the car make column
 df.sort_values(by="CarMake", inplace=True)
@@ -94,7 +95,7 @@ cursor.execute("""
 
 # Iterate over the DataFrame rows and insert data into the table
 for _, row in df.iterrows():
-    dealer_name = row['Dealer']
+    dealer_name = row['Dealership']
     car_make = row['CarMake']
     cursor.execute("INSERT INTO dealers (DealerName, CarMake) VALUES (?, ?)",
                    dealer_name, car_make)
@@ -108,3 +109,6 @@ print("Data has been saved to the database table.")
 
 
 # In[ ]:
+
+
+
