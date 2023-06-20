@@ -76,7 +76,7 @@ vehicle_details = []
 
 # List to store the specifications for each car
 specifications = []
-
+import datetime
 # Function to get the last scraped page and year
 def get_last_scraped_page_and_year():
     if os.path.exists("last_page.txt"):
