@@ -78,45 +78,48 @@ vehicle_details = []
 specifications = []
 
 # Function to get the last scraped page and year
-#def get_last_scraped_page_and_year():
- #   if os.path.exists("last_page.txt"):
-  #      with open("last_page.txt", "r") as file:
-   #         last_page, last_year = map(int, file.read().split(','))
-    #        return last_page, last_year
-    #else:
-     #   return 1, datetime.datetime.now().year  # Default values if the file doesn't exist
+def get_last_scraped_page_and_year():
+    if os.path.exists("last_page.txt"):
+        with open("last_page.txt", "r") as file:
+            last_page, last_year = map(int, file.read().split(','))
+            return last_page, last_year
+    else:
+        return 1, datetime.datetime.now().year  # Default values if the file doesn't exist
 # Function to update the last scraped page and year
 #def update_last_scraped_page_and_year(page, year):
     #with open("last_page.txt", "w") as file:
         #file.write(f"{page},{year}")
 
 
-from cachetools import TTLCache
-import datetime
+import os
+from git import Repo
 
-# Create a cache with a maximum size and TTL (time-to-live)
-cache = TTLCache(maxsize=1, ttl=float('inf'))  # Max size of 1 entry and TTL of 300 seconds (5 minutes)
+from github import Github
 
-# Function to get the last scraped page and year
-def get_last_scraped_page_and_year():
-    if 'last_page' in cache:
-        return cache['last_page']
-    elif os.path.exists("last_page.txt"):
-        with open("last_page.txt", "r") as file:
-            last_page, last_year = map(int, file.read().split(','))
-            data = (last_page, last_year)
-            cache['last_page'] = data
-            return data
-    else:
-        data = (1, datetime.datetime.now().year)  # Default values if the file doesn't exist
-        cache['last_page'] = data
-        return data
-
-# Function to update the last scraped page and year
 def update_last_scraped_page_and_year(page, year):
-    with open("last_page.txt", "w") as file:
-        file.write(f"{page},{year}")
-    cache['last_page'] = (page, year)
+    # GitHub repository details
+    repository_owner = "Sinawo"
+    repository_name = "Webscraper_CI"
+    branch_name = "Mukhethwa"
+    file_path = "last_page.txt"
+    commit_message = "Updated last scraped page and year"
+
+    # GitHub authentication
+    access_token = "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"  # Replace with your access token
+    g = Github(access_token)
+
+    # Get the repository
+    repo = g.get_repo(f"{repository_owner}/{repository_name}")
+
+    # Get the branch
+    branch = repo.get_branch(branch_name)
+
+    # Get the file
+    file = repo.get_contents(file_path, ref=branch_name)
+
+    # Update the file content
+    new_content = f"{page},{year}"
+    repo.update_file(file_path, commit_message, new_content, file.sha, branch=branch_name)
 
 
 
@@ -159,7 +162,7 @@ def get_last_page(year):
 
 
 # Set the desired execution time to one hour (3600 seconds)
-execution_time = time.time() + 3000
+execution_time = time.time() + 200
 
 # Starting page number and year
 start_page, start_year = get_last_scraped_page_and_year()
@@ -194,7 +197,7 @@ for page in range(start_page, last_page + 1):
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
                 update_last_scraped_page_and_year(page, year) 
-                execution_time += 3100
+                execution_time += 230
                 time.sleep(40)
             try:
                 found_link = (base_url + link['href'])
