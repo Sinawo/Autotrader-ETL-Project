@@ -33,6 +33,7 @@ jobs:
           pip install lxml
           pip install requests
           pip install PyGithub
+          pip install gitpython
 
       - name: Run ssms_scraper.py
         run: python ssms_scraper.py
