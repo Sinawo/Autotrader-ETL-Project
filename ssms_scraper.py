@@ -105,7 +105,7 @@ def update_last_scraped_page_and_year(page, year):
     commit_message = "Updated last scraped page and year"
 
     # GitHub authentication
-    access_token = "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"  # Replace with your access token
+    access_token = "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"  # Replace with your access token
     g = Github(access_token)
 
     # Get the repository
