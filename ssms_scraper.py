@@ -91,38 +91,20 @@ def get_last_scraped_page_and_year():
         #file.write(f"{page},{year}")
 
 
-import os
-from git import Repo
 def update_last_scraped_page_and_year(page, year):
-    repository_owner = "Sinawo"
-    repository_name = "Webscraper_CI"
-    branch_name = "Mukhethwa"
-    file_path = "last_page.txt"
-    commit_message = "Update last scraped page and year"
-
-    repo_path = f"Sinawo/Webscraper_CI"
-    repo = Repo(repo_path)
-
-    # Fetch the latest changes from the remote repository
-    origin = repo.remote()
-    origin.fetch()
-
-    # Switch to the desired branch
-    repo.git.checkout(branch_name)
-
-    # Update the file content
-    with open(file_path, "w") as file:
+    with open("last_page.txt", "w") as file:
         file.write(f"{page},{year}")
 
-    # Stage the changes
-    repo.index.add([file_path])
+    # Configure the repository
+    subprocess.run(['git', 'config', '--global', 'user.email', 'actions@github.com'])
+    subprocess.run(['git', 'config', '--global', 'user.name', 'GitHub Actions'])
+    subprocess.run(['git', 'init'])
+    subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/Sinawo/Webscraper_CI.git'])
 
-    # Commit the changes
-    repo.index.commit(commit_message)
-
-    # Push the changes to the remote repository
-    origin.push(branch_name)
-
+    # Commit and push the changes using the GITHUB_TOKEN
+    subprocess.run(['git', 'add', 'last_page.txt'])
+    subprocess.run(['git', 'commit', '-m', 'Mukhethwa Update last_page.txt'])
+    subprocess.run(['git', 'push', '--set-upstream', 'origin', 'master'], env={**os.environ, 'GIT_ASKPASS': 'echo', 'GITHUB_TOKEN': os.environ['GITHUB_TOKEN']})
 
 # Function to convert a list to a dictionary
 def Convert(lst):
@@ -163,7 +145,7 @@ def get_last_page(year):
 
 
 # Set the desired execution time to one hour (3600 seconds)
-execution_time = time.time() + 200
+execution_time = time.time() + 120
 
 # Starting page number and year
 start_page, start_year = get_last_scraped_page_and_year()
@@ -198,8 +180,8 @@ for page in range(start_page, last_page + 1):
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
                 update_last_scraped_page_and_year(page, year) 
-                execution_time += 230
-                time.sleep(40)
+                execution_time += 300
+                time.sleep(10)
             try:
                 found_link = (base_url + link['href'])
                 # Extract the car ID using regular expression
