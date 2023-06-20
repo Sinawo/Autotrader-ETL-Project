@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
+
 import pandas as pd
 import pyodbc
 import re
+
 
 # define the connection details
 server = 'web-development.database.windows.net'
@@ -10,7 +10,6 @@ database = 'graduates'
 username = 'Canvas'
 password = 'Dut950505'
 driver = '{ODBC Driver 17 for SQL Server}'
-
 
 # Establish a connection to the database
 conn = pyodbc.connect('DRIVER=' + driver + ';SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
@@ -52,10 +51,10 @@ car_makes = [
 ]
 
 # Function to search for car make in the dealer name
-def find_car_make(dealer):
+def find_car_make(dealership):
     for car_make in car_makes:
         pattern = r'\b{}\b'.format(re.escape(car_make))
-        if re.search(pattern, dealer, re.IGNORECASE):
+        if re.search(pattern, dealership, re.IGNORECASE):
             return car_make
     return None
 
@@ -100,5 +99,7 @@ for _, row in df.iterrows():
 conn.commit()
 conn.close()
 
-# Print a success message
-print("Data has been saved to the database table.")
+
+
+
+
