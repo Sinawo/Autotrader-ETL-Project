@@ -91,10 +91,17 @@ def get_last_scraped_page_and_year():
 def update_last_scraped_page_and_year(page, year):
     with open("last_page.txt", "w") as file:
         file.write(f"{page},{year}")
-     # Commit and push the changes
+
+    # Configure the repository
+    subprocess.run(['git', 'config', '--global', 'user.email', 'actions@github.com'])
+    subprocess.run(['git', 'config', '--global', 'user.name', 'GitHub Actions'])
+    subprocess.run(['git', 'init'])
+    subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/Sinawo/Webscraper_CI.git'])
+
+    # Commit and push the changes using the GITHUB_TOKEN
     subprocess.run(['git', 'add', 'last_page.txt'])
     subprocess.run(['git', 'commit', '-m', 'Update last_page.txt'])
-    subprocess.run(['git', 'push'])
+    subprocess.run(['git', 'push', '--set-upstream', 'origin', 'master'], env={**os.environ, 'GIT_ASKPASS': 'echo', 'GITHUB_TOKEN': os.environ['GITHUB_TOKEN']})
 
                 
                 
