@@ -93,34 +93,35 @@ def get_last_scraped_page_and_year():
 
 import os
 from git import Repo
-
-from github import Github
-
 def update_last_scraped_page_and_year(page, year):
-    # GitHub repository details
     repository_owner = "Sinawo"
     repository_name = "Webscraper_CI"
     branch_name = "Mukhethwa"
     file_path = "last_page.txt"
-    commit_message = "Updated last scraped page and year"
+    commit_message = "Update last scraped page and year"
 
-    # GitHub authentication
-    access_token = "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"  # Replace with your access token
-    g = Github(access_token)
+    repo_path = f"{repository_owner}/{repository_name}"
+    repo = Repo(repo_path)
 
-    # Get the repository
-    repo = g.get_repo(f"{repository_owner}/{repository_name}")
+    # Fetch the latest changes from the remote repository
+    origin = repo.remote()
+    origin.fetch()
 
-    # Get the branch
-    branch = repo.get_branch(branch_name)
-
-    # Get the file
-    file = repo.get_contents(file_path, ref=branch_name)
+    # Switch to the desired branch
+    repo.git.checkout(branch_name)
 
     # Update the file content
-    new_content = f"{page},{year}"
-    repo.update_file(file_path, commit_message, new_content, file.sha, branch=branch_name)
+    with open(file_path, "w") as file:
+        file.write(f"{page},{year}")
 
+    # Stage the changes
+    repo.index.add([file_path])
+
+    # Commit the changes
+    repo.index.commit(commit_message)
+
+    # Push the changes to the remote repository
+    origin.push(branch_name)
 
 
 # Function to convert a list to a dictionary
