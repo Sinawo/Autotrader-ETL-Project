@@ -11,6 +11,7 @@ import datetime
 import os
 import math
 from datetime import datetime
+import subprocess
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
 
@@ -85,12 +86,18 @@ def get_last_scraped_page_and_year():
             return last_page, last_year
     else:
         return 1, datetime.datetime.now().year  # Default values if the file doesn't exist
-
-
+   
 # Function to update the last scraped page and year
 def update_last_scraped_page_and_year(page, year):
     with open("last_page.txt", "w") as file:
         file.write(f"{page},{year}")
+     # Commit and push the changes
+    subprocess.run(['git', 'add', 'last_page.txt'])
+    subprocess.run(['git', 'commit', '-m', 'Update last_page.txt'])
+    subprocess.run(['git', 'push'])
+
+                
+                
 
 # Function to convert a list to a dictionary
 def Convert(lst):
@@ -168,6 +175,7 @@ for page in range(start_page, last_page + 1):
                 update_last_scraped_page_and_year(page, year) 
                 execution_time += 3720
                 time.sleep(60)
+                
             try:
                 found_link = (base_url + link['href'])
                 # Extract the car ID using regular expression
