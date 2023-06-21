@@ -1,0 +1,38 @@
+name: AutomatedMK Pipeline
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+  push:
+    branches:
+      - Mukhethwa
+
+jobs:
+  RunScript:
+    runs-on: ubuntu-latest
+    timeout-minutes: 720
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: 'refs/heads/Mukhethwa'  # Specify the desired branch here
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install beautifulsoup4
+          pip install pyodbc
+          pip install regex
+          pip install lxml
+          pip install requests
+          pip install PyGithub
+          pip install gitpython
+
+      - name: Run ssms_scraper.py
+        run: python ssms_scraper.py
