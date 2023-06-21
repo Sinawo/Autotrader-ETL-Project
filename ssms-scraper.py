@@ -12,13 +12,14 @@ import os
 import math
 from datetime import datetime
 import subprocess
+from git import Repo
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
 
 MIN_YEAR = 1990
-
+repo = Repo(os.getcwd())
 # Define table and column names
-table_name = 'autotrader_dataset'
+table_name = 'Sinawo_test'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
                 '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
@@ -92,19 +93,18 @@ def update_last_scraped_page_and_year(page, year):
     with open("last_page.txt", "w") as file:
         file.write(f"{page},{year}")
 
-    # Configure the repository
-    subprocess.run(['git', 'config', '--global', 'user.email', 'actions@github.com'])
-    subprocess.run(['git', 'config', '--global', 'user.name', 'GitHub Actions'])
-    subprocess.run(['git', 'init'])
-    subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/Sinawo/Webscraper_CI.git'])
+   # Instantiate a Repo object
+    repo = Repo(os.getcwd())
 
-    # Commit and push the changes using the GITHUB_TOKEN
-    subprocess.run(['git', 'add', 'last_page.txt'])
-    subprocess.run(['git', 'commit', '-m', 'Update last_page.txt'])
-    subprocess.run(['git', 'push', '--set-upstream', 'origin', 'master'], env={**os.environ, 'GIT_ASKPASS': 'echo', 'GITHUB_TOKEN': os.environ['GITHUB_TOKEN']})
+    # Add the modified file to the index
+    repo.index.add("last_page.txt")
 
-                
-                
+    # Commit the changes
+    repo.index.commit("Update last_page.txt")
+
+    # Push the changes to the remote repository
+    origin = repo.remote("origin")
+    origin.push()      
 
 # Function to convert a list to a dictionary
 def Convert(lst):
@@ -145,7 +145,7 @@ def get_last_page(year):
 
 
 # Set the desired execution time to one hour (3600 seconds)
-execution_time = time.time() + 3600
+execution_time = time.time() + 180
 
 # Starting page number and year
 start_page, start_year = get_last_scraped_page_and_year()
@@ -180,8 +180,8 @@ for page in range(start_page, last_page + 1):
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
                 update_last_scraped_page_and_year(page, year) 
-                execution_time += 3720
-                time.sleep(60)
+                execution_time += 120
+                time.sleep(5)
                 
             try:
                 found_link = (base_url + link['href'])
