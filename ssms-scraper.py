@@ -97,8 +97,11 @@ def update_last_scraped_page_and_year(page, year):
    # Instantiate a Repo object
     repo = Repo(os.getcwd())
     
+    
     # Access AUTOTRADER_TOKEN from environment variables
     autotrader_token = os.environ['AUTOTRADER_TOKEN']
+    repo.git.config('http.https://github.com/.extraheader', f'Authorization: Basic {autotrader_token}')
+
 
     # Add the modified file to the index
     repo.index.add("last_page.txt")
