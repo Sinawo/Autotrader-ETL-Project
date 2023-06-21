@@ -11,6 +11,7 @@ import datetime
 import os
 import math
 from datetime import datetime
+import datetime
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
 
@@ -79,7 +80,8 @@ specifications = []
 
 # Function to get the last scraped page and year
 def get_last_scraped_page_and_year():
-    select_query = "SELECT page, year FROM lastPage WHERE id = 1"
+    cursor = conn.cursor()
+    select_query = "SELECT page, year FROM lastPage WHERE id = 1" 
     cursor.execute(select_query)
     record = cursor.fetchone()
     if record is not None:
@@ -87,13 +89,12 @@ def get_last_scraped_page_and_year():
     else:
         return 1, datetime.datetime.now().year  # Default values if the record doesn't exist
 
-# Function to update the last scraped page and year
 def update_last_scraped_page_and_year(page, year):
+    cursor = conn.cursor()
     update_query = "UPDATE lastPage SET page = ?, year = ? WHERE id = 1"
     values = (page, year)
     cursor.execute(update_query, values)
-    connection.commit()
-
+    conn.commit()    
 
 # Function to convert a list to a dictionary
 def Convert(lst):
@@ -139,6 +140,7 @@ execution_time = time.time() + 120
 # Starting page number and year
 start_page, start_year = get_last_scraped_page_and_year()
 year = start_year
+page=start_page
 #last page for all total listings for a specific year 
 last_page = get_last_page(year)
 # Loop through each page of cars on the Autotrader website
@@ -154,6 +156,11 @@ for page in range(start_page, last_page + 1):
         year -= 1
         update_last_scraped_page_and_year(page, year)  # Reset to the first page
         
+        # Check if the current year has reached the minimum year
+        if year < MIN_YEAR:
+            break  # Break the loop if the minimum year is reached
+    else:
+        page += 1
 
 
     print(response.status_code)
@@ -168,8 +175,8 @@ for page in range(start_page, last_page + 1):
         # Find the link to the car listing   
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
-                update_last_scraped_page_and_year(page, year) 
                 execution_time += 90
+                update_last_scraped_page_and_year(page, year) 
                 time.sleep(40)
             try:
                 found_link = (base_url + link['href'])
@@ -274,8 +281,6 @@ for page in range(start_page, last_page + 1):
             else:
                 # Car_ID does not exist, add current timestamp to 'First_Entry_Timestamp'
                 car_data['First_Entry_Timestamp'] = car_data['Time_stamp']
-          
-
                            
 
             # Check if all values in car_data have corresponding column names [the one we want only]
@@ -309,7 +314,6 @@ for page in range(start_page, last_page + 1):
             
             conn.commit()
 
-
-# Call the function to get the last scraped page and year
-update_last_scraped_page_and_year(page, year)          
+            # Call the function to get the last scraped page and year
+            update_last_scraped_page_and_year(page, year)          
 conn.close()  
