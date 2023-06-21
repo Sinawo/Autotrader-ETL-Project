@@ -17,7 +17,7 @@ from git import Repo
 base_url = "https://www.autotrader.co.za"
 
 MIN_YEAR = 1990
-autotrader_token = os.environ['AUTOTRADER_TOKEN']
+AUTOTRADER_TOKEN = os.environ['AUTOTRADER_TOKEN']
 
 # Define table and column names
 table_name = 'Sinawo_test'
