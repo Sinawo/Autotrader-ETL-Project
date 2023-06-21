@@ -90,22 +90,33 @@ def get_last_scraped_page_and_year():
     #with open("last_page.txt", "w") as file:
         #file.write(f"{page},{year}")
 
-
 def update_last_scraped_page_and_year(page, year):
-    with open("last_page.txt", "w") as file:
-        file.write(f"{page},{year}")
+    url = "https://api.github.com/repos/Sinawo/Webscraper_CI/contents/last_page.txt"
+    branch = "Mukhethwa"
+    username = "MPMlangs"
+    password = "1996Ju16@"
 
-    # Configure the repository
-    subprocess.run(['git', 'config', '--global', 'user.email', 'actions@github.com'])
-    subprocess.run(['git', 'config', '--global', 'user.name', 'GitHub Actions'])
-    subprocess.run(['git', 'init'])
-    subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/Sinawo/Webscraper_CI.git'])
+    # Get the current file content
+    response = requests.get(url, params={"ref": branch}, auth=(username, password))
+    response_json = response.json()
+    content = response_json["content"]
+    sha = response_json["sha"]
 
-    # Commit and push the changes using the GITHUB_TOKEN
-    subprocess.run(['git', 'add', 'last_page.txt'])
-    subprocess.run(['git', 'commit', '-m', 'Mukhethwa Update last_page.txt'])
-    subprocess.run(['git', 'push', '--set-upstream', 'origin', 'master'], env={**os.environ, 'GIT_ASKPASS': 'echo', 'GITHUB_TOKEN': os.environ['GITHUB_TOKEN']})
+    # Update the file content
+    new_content = f"{page},{year}"
+    data = {
+        "message": "Update last_page.txt",
+        "content": new_content,
+        "sha": sha,
+        "branch": branch
+    }
+    response = requests.put(url, json=data, auth=(username, password))
 
+    if response.status_code == 200:
+        print("File updated successfully.")
+    else:
+        print("An error occurred while updating the file.")
+      
 # Function to convert a list to a dictionary
 def Convert(lst):
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
@@ -180,7 +191,7 @@ for page in range(start_page, last_page + 1):
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
                 update_last_scraped_page_and_year(page, year) 
-                execution_time += 300
+                execution_time += 200
                 time.sleep(10)
             try:
                 found_link = (base_url + link['href'])
