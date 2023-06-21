@@ -135,7 +135,7 @@ def get_last_page(year):
 
 
 # Set the desired execution time to one hour (3600 seconds)
-execution_time = time.time() + 120
+execution_time = time.time() + 3000
 
 # Starting page number and year
 start_page, start_year = get_last_scraped_page_and_year()
@@ -175,9 +175,9 @@ for page in range(start_page, last_page + 1):
         # Find the link to the car listing   
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
-                execution_time += 90
+                execution_time += 120
                 update_last_scraped_page_and_year(page, year) 
-                time.sleep(40)
+                time.sleep(60)
             try:
                 found_link = (base_url + link['href'])
                 # Extract the car ID using regular expression
