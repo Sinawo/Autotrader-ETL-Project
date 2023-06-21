@@ -10,7 +10,7 @@ on:
 jobs:
   RunScript:
     runs-on: ubuntu-latest
-    timeout-minutes: 720
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
