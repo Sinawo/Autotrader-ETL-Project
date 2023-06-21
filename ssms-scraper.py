@@ -103,7 +103,7 @@ def get_last_scraped_page_and_year():
     
 
     if result is not None:
-        query = "SELECT COUNT(*) FROM Sinawo_test"
+        query = "SELECT COUNT(*) FROM '{table_name}'"
         cursor.execute(query)
         total_count = cursor.fetchone()[0]
         listings_per_page = 20
