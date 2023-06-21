@@ -182,7 +182,9 @@ def get_last_page(year):
 
 
 # Set the desired execution time to one hour (3600 seconds)
+
 execution_time = time.time() + 3600
+
 
 # Starting page number and year
 start_page, start_year = get_last_scraped_page_and_year()
