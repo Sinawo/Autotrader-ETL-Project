@@ -17,7 +17,7 @@ from git import Repo
 base_url = "https://www.autotrader.co.za"
 
 MIN_YEAR = 1990
-AUTOTRADER_TOKEN = os.environ['AUTOTRADER_TOKEN']
+
 
 # Define table and column names
 table_name = 'Sinawo_test'
@@ -96,6 +96,9 @@ def update_last_scraped_page_and_year(page, year):
 
    # Instantiate a Repo object
     repo = Repo(os.getcwd())
+    
+    # Access AUTOTRADER_TOKEN from environment variables
+    autotrader_token = os.environ['AUTOTRADER_TOKEN']
 
     # Add the modified file to the index
     repo.index.add("last_page.txt")

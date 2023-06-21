@@ -32,8 +32,6 @@ jobs:
 
       - name: Run ssms-scraper.py
         run: python ssms-scraper.py
-      - name: Run car-make-dealerships.py
-        run: python car-make-dealerships.py
         env:
           AUTOTRADER_TOKEN: ${{ secrets.AUTOTRADER_TOKEN }}
 
