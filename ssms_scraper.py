@@ -340,3 +340,6 @@ last_page, last_year = get_last_scraped_page_and_year()
 # Print the last page and year
 print("Last Scraped Page:", last_page)
 print("Last Scraped Year:", last_year)  
+
+# Update the last scraped page and year in the file
+update_last_scraped_page_and_year(last_page, last_year)
