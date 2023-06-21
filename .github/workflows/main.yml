@@ -34,6 +34,8 @@ jobs:
         run: python ssms-scraper.py
       - name: Run car-make-dealerships.py
         run: python car-make-dealerships.py
+        env:
+          AUTOTRADER_TOKEN: ${{ secrets.AUTOTRADER_TOKEN }}
 
       # - name: Execute Stored Procedures
       #   uses: Azure/cli@v1.0.7

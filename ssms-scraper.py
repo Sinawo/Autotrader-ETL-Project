@@ -17,7 +17,8 @@ from git import Repo
 base_url = "https://www.autotrader.co.za"
 
 MIN_YEAR = 1990
-repo = Repo(os.getcwd())
+autotrader_token = os.environ['AUTOTRADER_TOKEN']
+
 # Define table and column names
 table_name = 'Sinawo_test'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
