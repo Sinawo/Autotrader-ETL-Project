@@ -189,10 +189,10 @@ for page in range(start_page, last_page + 1):
     for each_div in cars_containers:
         # Find the link to the car listing   
         for link in each_div.find_all('a', href=True):
-            if time.time() >= execution_time: 
-                update_last_scraped_page_and_year(page, year) 
-                execution_time += 200
-                time.sleep(10)
+            if time.time() >= execution_time:
+              execution_time += 200
+              update_last_scraped_page_and_year(page, year) 
+              time.sleep(10)
             try:
                 found_link = (base_url + link['href'])
                 # Extract the car ID using regular expression
