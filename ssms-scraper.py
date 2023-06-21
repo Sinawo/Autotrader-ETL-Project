@@ -13,14 +13,27 @@ import math
 from datetime import datetime
 import subprocess
 from git import Repo
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 # URL of the Autotrader website
 base_url = "https://www.autotrader.co.za"
+
+
+# Define the number of retries and backoff factor
+# retries = Retry(total=5, backoff_factor=0.5)
+
+# # Create a session with retry mechanism
+# session = requests.Session()
+# session.mount("https://", HTTPAdapter(max_retries=retries))
+
+# # Make the request with the session
+# response = session.get(url)
 
 MIN_YEAR = 1990
 
 
 # Define table and column names
-table_name = 'Sinawo_test'
+table_name = 'Autotrader_dataset'
 column_names = ['[Car_ID]', '[Title]', '[Price]', '[Car Type]', '[Registration Year]', '[Mileage]',
                 '[Transmission]', '[Fuel Type]', '[Dealership]','[Suburb]', '[Introduction date]',
                 '[End date]', '[Engine position]', '[Engine detail]', '[Engine capacity (litre)]',
@@ -67,7 +80,7 @@ create_table_query = f"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{ta
                        CREATE TABLE {table_name} ({', '.join(['{0} {1}'.format(name, data_type) for name, data_type in zip(column_names, column_data_types)])})"
 # Execute the CREATE TABLE query
 cursor.execute(create_table_query)
-# Commit the changes and close the connection
+# Commit the changes 
 conn.commit()
 
 # List to store the links for each car
@@ -82,36 +95,53 @@ specifications = []
 
 # Function to get the last scraped page and year
 def get_last_scraped_page_and_year():
-    if os.path.exists("last_page.txt"):
-        with open("last_page.txt", "r") as file:
-            last_page, last_year = map(int, file.read().split(','))
-            return last_page, last_year
+     # Check if the table exists
+    table_exists_query = "SELECT 1 FROM sys.tables WHERE name = 'page_tracker'"
+    cursor.execute(table_exists_query)
+    result = cursor.fetchone()
+    
+    
+
+    if result is not None:
+        query = "SELECT COUNT(*) FROM Sinawo_test"
+        cursor.execute(query)
+        total_count = cursor.fetchone()[0]
+        listings_per_page = 20
+        last_page = math.ceil(total_count / listings_per_page)
+        # Table exists, fetch the last scraped page and year from the table
+        cursor.execute("SELECT last_page, last_year FROM page_tracker")
+       
+        return last_page, cursor.fetchone()[1] 
+            
     else:
-        return 1, datetime.datetime.now().year  # Default values if the file doesn't exist
-   
+            # Table doesn't exist, create a new table and start from page 1 and the current year
+            create_table_query = '''
+                CREATE TABLE page_tracker (
+                    last_page INT,
+                    last_year INT
+                )
+            '''
+            cursor.execute(create_table_query)
+            last_page = 1
+            last_year = datetime.now().year
+            
+            # Insert the initial values into the table
+            insert_query = 'INSERT INTO page_tracker (last_page, last_year) VALUES (?, ?)'
+            cursor.execute(insert_query, (last_page, last_year))
+            cursor.execute("SELECT last_page, last_year FROM page_tracker")
+            
+            result = cursor.fetchone() 
+            conn.commit()
+            return result[0], result[1]
+
+            # Commit the changes to the database
+            
 # Function to update the last scraped page and year
 def update_last_scraped_page_and_year(page, year):
-    with open("last_page.txt", "w") as file:
-        file.write(f"{page},{year}")
-
-   # Instantiate a Repo object
-    repo = Repo(os.getcwd())
-    
-    
-    # Access AUTOTRADER_TOKEN from environment variables
-    autotrader_token = os.environ['AUTOTRADER_TOKEN']
-    repo.git.config('http.https://github.com/.extraheader', f'Authorization: Basic {autotrader_token}')
-
-
-    # Add the modified file to the index
-    repo.index.add("last_page.txt")
-
-    # Commit the changes
-    repo.index.commit("Update last_page.txt")
-
-    # Push the changes to the remote repository
-    origin = repo.remote("origin")
-    origin.push()      
+    # Update the last scraped page and year in the database
+    update_query = 'UPDATE page_tracker SET last_page = ?, last_year = ?'
+    cursor.execute(update_query, (page, year))
+    conn.commit()
 
 # Function to convert a list to a dictionary
 def Convert(lst):
@@ -137,7 +167,7 @@ def Add_Key_Values(list, dictionary):
     return car_data
 # Function to get the last page for a specific year
 def get_last_page(year):
-    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?year={year}-to-{year}")
+    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?year={year}-to-{year}", timeout=5)
         
     home_page = BeautifulSoup(response.content, 'lxml')
    
@@ -152,7 +182,7 @@ def get_last_page(year):
 
 
 # Set the desired execution time to one hour (3600 seconds)
-execution_time = time.time() + 180
+execution_time = time.time() + 3600
 
 # Starting page number and year
 start_page, start_year = get_last_scraped_page_and_year()
@@ -163,7 +193,7 @@ last_page = get_last_page(year)
 #for page in range(num_iterations):
 for page in range(start_page, last_page + 1):
 
-    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=PriceLow&year={year}-to-{year}&priceoption=RetailPrice")
+    response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=PriceLow&year={year}-to-{year}&priceoption=RetailPrice", timeout=5)
     
     # If you have finished scraping all pages for a specific year, 
     # move to the next year and reset the last scraped page to 1
@@ -174,7 +204,7 @@ for page in range(start_page, last_page + 1):
         
 
 
-    print(response.status_code)
+   
     home_page = BeautifulSoup(response.content, 'lxml')
     
     
@@ -187,8 +217,8 @@ for page in range(start_page, last_page + 1):
         for link in each_div.find_all('a', href=True):
             if time.time() >= execution_time: 
                 update_last_scraped_page_and_year(page, year) 
-                execution_time += 120
-                time.sleep(5)
+                execution_time += 3600
+                time.sleep(120)
                 
             try:
                 found_link = (base_url + link['href'])
