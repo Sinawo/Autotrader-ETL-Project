@@ -99,18 +99,21 @@ def get_last_scraped_page_and_year():
     table_exists_query = "SELECT 1 FROM sys.tables WHERE name = 'page_tracker'"
     cursor.execute(table_exists_query)
     result = cursor.fetchone()
-    
+   
     
 
     if result is not None:
-        query = "SELECT COUNT(*) FROM '{table_name}'"
-        cursor.execute(query)
+        
+        cursor.execute("SELECT last_year FROM page_tracker")
+        reg_year =  cursor.fetchone()[0]
+        query = f"SELECT COUNT(*) FROM {table_name} WHERE [Registration Year] = ?"
+        cursor.execute(query, reg_year)
         total_count = cursor.fetchone()[0]
         listings_per_page = 20
         last_page = math.ceil(total_count / listings_per_page)
         # Table exists, fetch the last scraped page and year from the table
         cursor.execute("SELECT last_page, last_year FROM page_tracker")
-       
+        
         return last_page, cursor.fetchone()[1] 
             
     else:
@@ -190,16 +193,18 @@ execution_time = time.time() + 3600
 start_page, start_year = get_last_scraped_page_and_year()
 year = start_year
 #last page for all total listings for a specific year 
-last_page = get_last_page(year)
+end_page = get_last_page(year)
+
+
 # Loop through each page of cars on the Autotrader website
 #for page in range(num_iterations):
-for page in range(start_page, last_page + 1):
+for page in range(start_page, end_page + 1):
 
     response = requests.get(f"https://www.autotrader.co.za/cars-for-sale?pagenumber={page}&sortorder=PriceLow&year={year}-to-{year}&priceoption=RetailPrice", timeout=5)
     
     # If you have finished scraping all pages for a specific year, 
     # move to the next year and reset the last scraped page to 1
-    if page == last_page:
+    if page == end_page:
         page = 1
         year -= 1
         update_last_scraped_page_and_year(page, year)  # Reset to the first page
