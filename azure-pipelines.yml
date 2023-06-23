@@ -18,7 +18,7 @@ pool:
 jobs:
 - job: RunScript
   displayName: 'Run Script'
-  timeoutInMinutes: 720  # Set the timeout to 12 hours (720 minutes)
+  
 
   steps:
   - script: echo Hello, world!
@@ -43,6 +43,19 @@ jobs:
   - script: |
       python ssms-scraper.py
     displayName: 'Run ssms-scraper.py'
+  - script: |
+      python another_script.py
+    displayName: 'Run car-make-dealerships.py'
+
+  - script: |
+      # Connect to your SQL Server using SSMS or sqlcmd
+      
+      # Execute the stored procedures using their names
+      sqlcmd -S web-development.database.windows.net -d graduates -U Canvas -P Dut950505 -Q "EXEC Create_Clean_Flat_Updated_table"
+      sqlcmd -S web-development.database.windows.net -d graduates -U Canvas -P Dut950505 -Q "EXEC CreateDimVehicle"
+      sqlcmd -S web-development.database.windows.net -d graduates -U Canvas -P Dut950505 -Q "EXEC SplitDealers_SP"
+      sqlcmd -S web-development.database.windows.net -d graduates -U Canvas -P Dut950505 -Q "EXEC Update_DimDealerships"
+   
 
 
 

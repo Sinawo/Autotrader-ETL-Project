@@ -1,0 +1,47 @@
+name: Automated Pipeline
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+  push:
+    branches:
+      - main
+jobs:
+  RunScript:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install beautifulsoup4
+          pip install pyodbc
+          pip install regex
+          pip install lxml
+          pip install requests
+          pip install GitPython
+
+      - name: Run ssms-scraper.py
+        run: python ssms-scraper.py
+      - name: Run car-make-dealerships.py
+        run: python car-make-dealerships.py
+
+      # - name: Execute Stored Procedures
+      #   uses: Azure/cli@v1.0.7
+      #   with:
+      #     inlineScript: |
+      #       az sql db exec-sp -s web-development.database.windows.net -d graduates -u Canvas -p Dut950505 --name [dbo].[Create_Clean_Flat_Updated_table]
+      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[SplitDealers_SP]
+      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[CreateDealerTables]
+      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[Update_DimDealerships]
+      #       az sql db exec-sp -s web-development.database.windows.net-d graduates -u Canvas -p Dut950505 --name [dbo].[CreateDimVehicle]
+      #       # Add more commands for other stored procedures
