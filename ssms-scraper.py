@@ -12,6 +12,7 @@ import os
 import math
 from datetime import datetime
 import subprocess
+import sys
 from git import Repo
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -208,6 +209,8 @@ for page in range(start_page, end_page + 1):
         page = 1
         year -= 1
         update_last_scraped_page_and_year(page, year)  # Reset to the first page
+    if year <= MIN_YEAR and page > end_page: 
+        sys.exit("Reached scraped the whole website")  
         
 
 
